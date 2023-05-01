@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +25,7 @@ import com.tpmobile.mediacopa.ui.screens.LugaresScreen
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var navController: NavController
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -33,7 +35,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    GoogleMap(modifier = Modifier.fillMaxSize())
+                    val navController = rememberNavController()
+//                    GoogleMap(modifier = Modifier.fillMaxSize()) // todo esta no es la pag principal mover de luagr
+                    BottomMenu()
                 }
             }
         }
@@ -55,7 +59,7 @@ fun BottomMenu() {
         floatingActionButtonPosition = FabPosition.Center,
         isFloatingActionButtonDocked = true,
         bottomBar = {
-            BottomAppBar {
+            BottomNavigation  {
 
                 Row(
                     modifier = Modifier.fillMaxSize(),
@@ -74,7 +78,7 @@ fun BottomMenu() {
         }
     ) {
         val navController = rememberNavController()
-        NavHost(navController, startDestination = "Direcciones") {
+        NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones") { DireccionesScreen(navController) }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
