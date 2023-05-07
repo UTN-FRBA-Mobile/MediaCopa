@@ -1,6 +1,7 @@
 package com.tpmobile.mediacopa
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,15 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.maps.android.compose.GoogleMap
-import com.tpmobile.mediacopa.ui.screens.DireccionesScreen
-import com.tpmobile.mediacopa.ui.screens.HistorialScreen
-import com.tpmobile.mediacopa.ui.screens.LugaresScreen
+import com.tpmobile.mediacopa.ui.screens.*
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
 class MainActivity : ComponentActivity() {
@@ -35,6 +35,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
+                    val context = LocalContext.current
+                   /* val sharedPreferences = context.getSharedPreferences("MySharedPreferences", Context.MODE_PRIVATE)
+                    sharedPreferences.edit().clear().apply()*/
+                    val sharedPreferences = MySharedPreferences(context)
+                    agregarAHistorial("b","a","a",sharedPreferences)
                     val navController = rememberNavController()
 //                    GoogleMap(modifier = Modifier.fillMaxSize()) // todo esta no es la pag principal mover de luagr
                     BottomMenu()
@@ -45,14 +50,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun BottomMenu() {
+    val navController = rememberNavController()
     Scaffold(
+
         floatingActionButton = {
             FloatingActionButton(onClick = { /* TODO: ... */ },) {
-                Icon(Icons.Filled.LocationOn,
-                    contentDescription = "Direcciones",
+                Icon(Icons.Filled.LocationOn,  //Esto hace referencia el Icono de mapa del menu de navegacion inferior
+                    contentDescription = "Direcciones", //Descripcion del boton para accesibilidad
                     tint = Color.White)
             }
         },
@@ -66,10 +73,10 @@ fun BottomMenu() {
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = { /* TODO: Navegar a la página de historial */ }) {
+                    IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { /* TODO: Navegar a la página de lugares */ }) {
+                    IconButton(onClick = { navController.navigate("Lugares") }) {
                         Icon(Icons.Filled.ShoppingCart, contentDescription = "Lugares")
                     }
                 }
@@ -77,7 +84,7 @@ fun BottomMenu() {
             }
         }
     ) {
-        val navController = rememberNavController()
+
         NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones") { DireccionesScreen(navController) }
             composable("Historial") { HistorialScreen(navController) }
