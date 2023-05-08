@@ -36,11 +36,10 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     val context = LocalContext.current
-                   /* val sharedPreferences = context.getSharedPreferences("MySharedPreferences", Context.MODE_PRIVATE)
-                    sharedPreferences.edit().clear().apply()*/
                     val sharedPreferences = MySharedPreferences(context)
-                    agregarAHistorial("b","a","a",sharedPreferences)
+                    agregarAHistorial("b","a","a","2",sharedPreferences)
                     val navController = rememberNavController()
+
 //                    GoogleMap(modifier = Modifier.fillMaxSize()) // todo esta no es la pag principal mover de luagr
                     BottomMenu()
                 }
