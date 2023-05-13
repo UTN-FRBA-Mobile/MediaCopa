@@ -48,7 +48,7 @@ fun LugaresScreen(navController: NavController) { // hay que comentar los parame
         }
 
         Button(
-            onClick = { /* todo hacer que valla a direcciones */ },
+            onClick =  {navController.navigate("Direcciones") },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(5.dp)
