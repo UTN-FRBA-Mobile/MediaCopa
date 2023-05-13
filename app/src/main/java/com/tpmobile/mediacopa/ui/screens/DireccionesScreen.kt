@@ -18,6 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import com.tpmobile.mediacopa.R
 
 
 //@Preview(showBackground = true)
@@ -34,17 +37,25 @@ fun DireccionesScreen(navController: NavController) { // hay que comentar los pa
             style = MaterialTheme.typography.h5,
             modifier = Modifier.padding(bottom = 20.dp , top= 20.dp),
             )
-        var contador = 0
 
-        AutoUpdatingTextField()
-        AutoUpdatingTextField()
+        var contador by remember { mutableStateOf(0) }
 
-        for(i in 0 until contador){ //todo no funciona
-            AutoUpdatingTextField()
+        repeat(2) {
+            AutoUpdatingTextField();
+        }
+        repeat(contador) {
+           Row() {
+                AutoUpdatingTextField(); // todo mal proque se borra siempre el de abajo, tengo que borrar el que correctponde
+                Button(
+                    onClick = { if (contador > 0) {contador--} }
+                ) {
+                    Text(text = "X")
+                }
+            }
         }
 
         FloatingActionButton(
-            onClick = {if (contador < 2) { contador += 1 }  },
+            onClick = {if (contador < 2) { contador ++ }  },
             backgroundColor = MaterialTheme.colors.primary,
             modifier = Modifier.padding(top= 20.dp)
             // todo me gusatria poner un enable conatdor >=2 pero no existe
@@ -65,6 +76,7 @@ fun AutoUpdatingTextField() {
         onValueChange = { texto = it },
         modifier = Modifier.padding(20.dp)
     )
+
 }
 
 
