@@ -20,7 +20,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.maps.android.compose.GoogleMap
 import com.tpmobile.mediacopa.ui.screens.*
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
@@ -37,10 +36,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val context = LocalContext.current
                     val sharedPreferences = MySharedPreferences(context)
-                    agregarAHistorial("b","a","a","2",sharedPreferences)
+                    agregarAHistorial("b","a","a","2",sharedPreferences) //todo sacar harcode
                     val navController = rememberNavController()
-
-//                    GoogleMap(modifier = Modifier.fillMaxSize()) // todo esta no es la pag principal mover de luagr
                     BottomMenu()
                 }
             }
@@ -88,6 +85,7 @@ fun BottomMenu() {
             composable("Direcciones") { DireccionesScreen(navController) }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
+            composable("Mapa") { MapaScreen(navController) }
         }
     }
 

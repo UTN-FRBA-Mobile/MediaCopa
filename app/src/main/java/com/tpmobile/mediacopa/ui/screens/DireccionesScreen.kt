@@ -7,6 +7,8 @@ import android.icu.text.CaseMap.Title
 import android.text.Layout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ColumnScopeInstance.align
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import com.tpmobile.mediacopa.R
+import com.google.maps.android.compose.GoogleMap
 
 
 //@Preview(showBackground = true)
@@ -62,6 +65,19 @@ fun DireccionesScreen(navController: NavController) { // hay que comentar los pa
         ) {
             Icon(Icons.Default.Add, contentDescription = "Agregar")
         }
+        Button(
+            onClick =  {navController.navigate("Mapa") },
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.padding(5.dp),
+        ) {
+            Text(text = "Buscar punto medio" )
+        }
+    }
+    Column(
+
+    ) {
+
     }
 }
 
