@@ -69,8 +69,6 @@ fun Intermediario(){
 
 var botonApretado = mutableStateOf(false)
 var botonApretado2 = mutableStateOf(false)
-var selectedCards = mutableStateOf(emptyList<Int>())
-var isChecked= mutableStateOf(false)
 val selectedList =  mutableStateListOf<Boolean>()
 val primeraVuelta = mutableStateOf(false)
 val primeraVueltaAlfa = mutableStateOf(false)
@@ -81,7 +79,7 @@ val segundoClick = mutableStateOf(false)
 //todoo lo de abajo hace que se muestren por pantalla las tarjetitas
 fun HistorialScreen(navController: NavController) {
     val count = AppContext.nombresGuardados.size
-
+    mostrarGuardados()
     //BotonDelete()
     Box(Modifier.fillMaxSize()) {
         Image(
@@ -310,6 +308,15 @@ fun agregarAHistorial(nombre1: String, nombre2: String, nombre3: String,nombre4:
 
 }
 
+fun mostrarGuardados() {
+
+    AppContext.nombresGuardados.clear()
+    AppContext.nombresGuardados.addAll(AppContext.sharedPreferences.getNombresGuardados())
+
+
+}
+
+@SuppressLint("StaticFieldLeak")
 object AppContext {
     lateinit var context: Context
     lateinit var sharedPreferences: MySharedPreferences
