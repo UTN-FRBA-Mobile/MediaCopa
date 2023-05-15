@@ -93,12 +93,15 @@ fun HistorialScreen(navController: NavController) {
                 .background(Color.Transparent)
                 .align(Alignment.TopEnd)
                 .clickable {
-                    if(primeraVueltaAlfa.value){
-                        segundoClick.value=true
+                    if (count != 0) {
+                        if (primeraVueltaAlfa.value) {
+                            segundoClick.value = true
+                        }
+                        botonApretado.value = true
+                        primeraVuelta.value = true
+                        primeraVueltaAlfa.value = true
                     }
-                    botonApretado.value = true
-                    primeraVuelta.value=true
-                    primeraVueltaAlfa.value=true}
+                }
 
         )
     }
