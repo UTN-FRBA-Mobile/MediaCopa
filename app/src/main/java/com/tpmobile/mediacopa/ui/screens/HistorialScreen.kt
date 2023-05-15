@@ -73,6 +73,7 @@ var selectedCards = mutableStateOf(emptyList<Int>())
 var isChecked= mutableStateOf(false)
 val selectedList =  mutableStateListOf<Boolean>()
 val primeraVuelta = mutableStateOf(false)
+val primeraVueltaAlfa = mutableStateOf(false)
 val segundoClick = mutableStateOf(false)
 
 //TODO HACER ESTA FUNCION MAS LEGIBLE
@@ -92,11 +93,12 @@ fun HistorialScreen(navController: NavController) {
                 .background(Color.Transparent)
                 .align(Alignment.TopEnd)
                 .clickable {
-                    if(primeraVuelta.value){
+                    if(primeraVueltaAlfa.value){
                         segundoClick.value=true
                     }
                     botonApretado.value = true
-                    primeraVuelta.value=true}
+                    primeraVuelta.value=true
+                    primeraVueltaAlfa.value=true}
 
         )
     }
@@ -118,6 +120,7 @@ fun HistorialScreen(navController: NavController) {
         primeraVuelta.value=false
         botonApretado.value = false
         segundoClick.value=false
+        primeraVueltaAlfa.value=false
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -287,7 +290,6 @@ class MySharedPreferences(context: Context) {
 
     fun borrarSeleccionado(i: Int) {
         AppContext.nombresGuardados.removeAt(i)
-        AppContext.nombresGuardados.addAll(getNombresGuardados())
     }
 
 }
