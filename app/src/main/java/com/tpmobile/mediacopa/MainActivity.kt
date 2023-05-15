@@ -21,7 +21,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tpmobile.mediacopa.ui.screens.*
+import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
+
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavController
@@ -34,9 +37,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    val context = LocalContext.current
-                    val sharedPreferences = MySharedPreferences(context)
-                    agregarAHistorial("b","a","a","2",sharedPreferences) //todo sacar harcode
+                   // AppContext.context = LocalContext.current
+                    AppContext.context = applicationContext
+                    sharedPreferences = MySharedPreferences(AppContext.context)
                     val navController = rememberNavController()
                     BottomMenu()
                 }
@@ -53,7 +56,7 @@ fun BottomMenu() {
     Scaffold(
 
         floatingActionButton = {
-            FloatingActionButton(onClick = { /* TODO: ... */ },) {
+            FloatingActionButton(onClick = { navController.navigate("Direcciones") }) {
                 Icon(Icons.Filled.LocationOn,  //Esto hace referencia el Icono de mapa del menu de navegacion inferior
                     contentDescription = "Direcciones", //Descripcion del boton para accesibilidad
                     tint = Color.White)
