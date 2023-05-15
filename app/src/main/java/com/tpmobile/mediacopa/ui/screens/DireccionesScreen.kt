@@ -60,7 +60,7 @@ fun DireccionesScreen(navController: NavController) { // hay que comentar los pa
                         }
                     }
                 ) {
-                    Text(text = "X")
+                    Text(text = "x")
                 }
             }
         }
