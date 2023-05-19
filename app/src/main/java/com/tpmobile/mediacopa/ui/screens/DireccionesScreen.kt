@@ -1,34 +1,49 @@
 package com.tpmobile.mediacopa.ui.screens
 
-import android.graphics.Color
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import android.icu.text.CaseMap.Title
-import android.text.Layout
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
 //import androidx.compose.foundation.layout.ColumnScopeInstance.align TODO lo comente porque no me corria el codigo y no se usaba
+import android.app.Activity.RESULT_CANCELED
+import android.app.Activity.RESULT_OK
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
-import com.tpmobile.mediacopa.R
-import com.google.maps.android.compose.GoogleMap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.tpmobile.mediacopa.BuildConfig
+import com.tpmobile.mediacopa.models.Address
+import com.tpmobile.mediacopa.models.AgregarAHistorialInputModel
 
 
 //@Preview(showBackground = true)
 @Composable
-fun DireccionesScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
+fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?) { // hay que comentar los parametros para poder usar el preview
+
+    val context = LocalContext.current
+    val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
+    val suggestionsList by remember { mutableStateOf(MutableList(4) { emptyList<AutocompletePrediction>() }) } // cada direccion tiene su lista de sugerencias
+    var textFieldValues by remember { mutableStateOf( mutableListOf<TextFieldValue>() ) }
+
+    //test con 1 solo
+    var suggestions by remember { mutableStateOf(emptyList<AutocompletePrediction>()) }
+    var textFieldValue by remember { mutableStateOf( TextFieldValue() ) }
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,
@@ -36,37 +51,54 @@ fun DireccionesScreen(navController: NavController) { // hay que comentar los pa
     ){
 
         Text(
-            text = "Inserte las direcciones",
+            text = "Agregar direcciones clickeando el boton",
             style = MaterialTheme.typography.h5,
             modifier = Modifier.padding(bottom = 20.dp , top= 20.dp),
             )
 
-        var contador by remember { mutableStateOf(0) }
+        var cantDirecciones by remember { mutableStateOf(2) }
 
-        repeat(2) {
-            AutoUpdatingTextField();
-        }
-        repeat(contador) {
-           Row() {
-                AutoUpdatingTextField(); // todo mal proque se borra siempre el de abajo, tengo que borrar el que correctponde
-                Button(
-                    onClick = { if (contador > 0) {contador--} }
-                ) {
-                    Text(text = "X")
+        LazyColumn {
+            items(count = cantDirecciones) { index ->
+                Row() {
+
+                    var place = AutoUpdatingTextField();
+
+                    Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
+
+                    // TODO: ponerle un enter a esto y estilos un poco mejor jeje
+                    Text("Dirección ${index + 1}: ${place.value?.name}")
+
+                    var address = Address(place.value?.address,
+                        place.value?.latLng,
+                        place.value?.types?.get(0)
+                    );
+
+                    selectedPlaces.add(address);
+
+                    if (cantDirecciones < 4) { // hasta 3 direcc, aparece un +
+                        FloatingActionButton(
+                            onClick = { cantDirecciones ++ },
+                            backgroundColor = MaterialTheme.colors.primary,
+                            modifier = Modifier.padding(top= 20.dp),
+                        ) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                        }
+                    }
+                    if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
+                        FloatingActionButton(
+                            onClick = { cantDirecciones -- },
+                            backgroundColor = MaterialTheme.colors.primary,
+                            modifier = Modifier.padding(top= 20.dp),
+                        ) {
+                            Icon(imageVector = Icons.Default.Clear, contentDescription = null)
+                        }
+                    }
                 }
             }
         }
-
-        FloatingActionButton(
-            onClick = {if (contador < 2) { contador ++ }  },
-            backgroundColor = MaterialTheme.colors.primary,
-            modifier = Modifier.padding(top= 20.dp)
-            // todo me gusatria poner un enable conatdor >=2 pero no existe
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Agregar")
-        }
         Button(
-            onClick =  {navController.navigate("Mapa") },
+            onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces)  },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(5.dp),
@@ -74,25 +106,128 @@ fun DireccionesScreen(navController: NavController) { // hay que comentar los pa
             Text(text = "Buscar punto medio" )
         }
     }
-    Column(
+}
 
-    ) {
+fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?>) {
+    //TODO: todo esto rompe asi como esta, pero es una idea mas o menos de como seria
+//    var midpointLatLong = findMidpoint(selectedPlaces[0]?.latLong!!, selectedPlaces[1]?.latLong!!);
+//    var midpointPlace = getPlaceFromLatLong(midpointLatLong);
+//
+//    var midpointAddress = Address(midpointPlace?.address,
+//        midpointPlace?.latLng,
+//        midpointPlace?.types?.get(0)
+//    );
+//
+//    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces);
 
-    }
+    // TODO: llamar al back para que guarde las direcc en el historial
+
+    navController.navigate("Mapa")
+}
+
+
+//TODO: hacer que ese punto medio sea de un tipo particular, y mejorar la funcion para que sean varias addresses
+fun findMidpoint(location1: LatLng, location2: LatLng): LatLng {
+    val lat = (location1.latitude + location2.latitude) / 2;
+    val lng = (location1.longitude + location2.longitude) / 2;
+    return LatLng(lat, lng);
+}
+
+fun getPlaceFromLatLong(location: LatLng): Place? {
+ //TODO: capaz con Geocoder, investigar
+    return null;
 }
 
 
 @Composable
-fun AutoUpdatingTextField() {
-    var texto by remember { mutableStateOf("") }
+fun AutoUpdatingTextField(): MutableState<Place?> {
+    val context = LocalContext.current;
+    var placeResult = remember { mutableStateOf<Place?>(null) }
 
-    TextField(
-        label = { Text("Direccion") },
-        value = texto,
-        onValueChange = { texto = it },
-        modifier = Modifier.padding(20.dp)
-    )
+    val intentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ){ it ->
+        when (it.resultCode) {
+            RESULT_OK -> {
+                it.data?.let {
+                    var place = Autocomplete.getPlaceFromIntent(it);
+                    placeResult.value = place;
+                }
+            }
+//            AutocompleteActivity.RESULT_ERROR -> {
+//                it.data?.let {
+//                    val status = Autocomplete.getStatusFromIntent(it)
+//                    Log.i("MAP_ACTIVITY", "Place: FAIL")
+//                }
+//            }
+            RESULT_CANCELED -> {
+                // The user canceled the operation.
+            }
+        }
+    }
 
+    val launchMapInputOverlay = {
+        Places.initialize(context, BuildConfig.MAPS_API_KEY)
+        val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.TYPES)
+        val intent = Autocomplete
+            .IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+            .build(context)
+        intentLauncher.launch(intent)
+    }
+
+    Column {
+        Button(onClick = launchMapInputOverlay) {
+            Text("Ingresar dirección")
+        }
+    }
+
+    return placeResult;
 }
 
+
+// una opcion de buscar sugerencias --> no la use al final
+//fun fetchAutocompleteSuggestions(
+//    query: String,
+//    placesClient: PlacesClient,
+//    callback: (List<AutocompletePrediction>) -> Unit
+//) {
+//    val request = FindAutocompletePredictionsRequest.builder()
+//        .setQuery(query)
+//        .build()
+//
+//    placesClient.findAutocompletePredictions(request)
+//        .addOnSuccessListener { response ->
+//            callback.invoke(response.autocompletePredictions)
+//        }
+//        .addOnFailureListener { exception ->
+//            // Handle error here
+//        }
+//}
+
+// extra - TODO: borrar cuando ya se defina como mostrar las sugerencias
+//Column {
+//    OutlinedTextField(
+//        label = { Text("Direccion") },
+//        value = textFieldValue,
+//        onValueChange = { newValue ->
+//            textFieldValue = newValue
+//            // Fetch suggestions based on the new input
+//            if (placesClient != null) {
+//                fetchAutocompleteSuggestions(newValue.text, placesClient) { predictions ->
+//                    suggestions = predictions
+//                }
+//            }
+//        },
+//        modifier = Modifier.padding(20.dp)
+//    )
+//
+//    // Display the suggestions
+//    if (suggestions.isNotEmpty()) {
+//        Column {
+//            suggestions.forEach { prediction ->
+//                Text(prediction.getPrimaryText(null).toString())
+//            }
+//        }
+//    }
+//}
 
