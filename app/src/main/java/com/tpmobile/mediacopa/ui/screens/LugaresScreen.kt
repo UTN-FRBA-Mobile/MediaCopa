@@ -20,8 +20,7 @@ import androidx.compose.ui.Modifier
 //@Preview(showBackground = true)
 @Composable
 fun LugaresScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
-//
-//    val options = listOf( "Cafes", "Restaurantes", "Tiendas", "Punto medio")
+
         val options = mapOf(
         0 to "Cafes"        ,
         1 to "Restaurantes" ,
