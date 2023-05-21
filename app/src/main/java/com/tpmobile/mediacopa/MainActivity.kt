@@ -58,7 +58,7 @@ fun BottomMenu() {
     Scaffold(
 
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("Direcciones") }) {
+            FloatingActionButton(onClick = { navController.navigate("Lugares") }) {
                 Image(
                     painter = painterResource(R.drawable.zoom),
                     contentDescription = "Delete",)
@@ -77,8 +77,8 @@ fun BottomMenu() {
                     IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { navController.navigate("Lugares") }) {
-                        Icon(Icons.Filled.ShoppingCart, contentDescription = "Lugares")
+                    IconButton(onClick = { navController.navigate("Direcciones") }) {
+                        Icon(Icons.Filled.Place, contentDescription = "Direcciones")
                     }
                 }
 
