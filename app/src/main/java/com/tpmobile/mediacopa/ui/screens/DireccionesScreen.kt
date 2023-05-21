@@ -13,9 +13,11 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -58,16 +60,19 @@ fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?)
 
         var cantDirecciones by remember { mutableStateOf(2) }
 
-        LazyColumn {
-            items(count = cantDirecciones) { index ->
-                Row() {
+        Column {
+            repeat(cantDirecciones) { index ->
+                Row(modifier = Modifier.padding(vertical=10.dp)) {
 
                     var place = AutoUpdatingTextField();
 
                     Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
 
                     // TODO: ponerle un enter a esto y estilos un poco mejor jeje
-                    Text("Dirección ${index + 1}: ${place.value?.name}")
+                    Text(
+                        text= "Dirección ${index + 1}: ${place.value?.name}",
+                        modifier = Modifier.padding( vertical = 8.dp, horizontal = 5.dp)
+                    )
 
                     var address = Address(place.value?.address,
                         place.value?.latLng,
@@ -76,26 +81,28 @@ fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?)
 
                     selectedPlaces.add(address);
 
-                    if (cantDirecciones < 4) { // hasta 3 direcc, aparece un +
-                        FloatingActionButton(
-                            onClick = { cantDirecciones ++ },
-                            backgroundColor = MaterialTheme.colors.primary,
-                            modifier = Modifier.padding(top= 20.dp),
-                        ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                        }
-                    }
                     if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
-                        FloatingActionButton(
+                        IconButton(
                             onClick = { cantDirecciones -- },
-                            backgroundColor = MaterialTheme.colors.primary,
-                            modifier = Modifier.padding(top= 20.dp),
+//                            modifier = Modifier.padding(top= 20.dp),
                         ) {
                             Icon(imageVector = Icons.Default.Clear, contentDescription = null)
                         }
                     }
+
+                }
+
+            }
+            if (cantDirecciones < 4) { // hasta 3 direcc, aparece un +
+                FloatingActionButton(
+                    onClick = { cantDirecciones ++ },
+                    backgroundColor = MaterialTheme.colors.primary,
+                    modifier = Modifier.padding(top= 20.dp),
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
                 }
             }
+
         }
         Button(
             onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces)  },
@@ -176,8 +183,12 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
     }
 
     Column {
+
         Button(onClick = launchMapInputOverlay) {
-            Text("Ingresar dirección")
+//            Text("Ingresar dirección")
+            Icon(Icons.Filled.LocationOn,
+                contentDescription = "Direcciones",
+                tint = Color.White)
         }
     }
 
