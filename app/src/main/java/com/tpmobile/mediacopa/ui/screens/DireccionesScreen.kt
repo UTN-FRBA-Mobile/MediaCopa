@@ -34,7 +34,8 @@ import com.tpmobile.mediacopa.models.AgregarAHistorialInputModel
 
 //@Preview(showBackground = true)
 @Composable
-fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?) { // hay que comentar los parametros para poder usar el preview
+
+fun DireccionesScreen(navController: NavController, lugar: String, placesClient: PlacesClient?) { // hay que comentar los parametros para poder usar el preview
 
     val context = LocalContext.current
     val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
@@ -44,6 +45,7 @@ fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?)
     //test con 1 solo
     var suggestions by remember { mutableStateOf(emptyList<AutocompletePrediction>()) }
     var textFieldValue by remember { mutableStateOf( TextFieldValue() ) }
+
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,

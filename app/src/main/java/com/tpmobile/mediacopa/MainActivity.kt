@@ -97,7 +97,12 @@ fun BottomMenu(placesClient: PlacesClient?) {
     ) {
 
         NavHost(navController, startDestination = "Lugares") {
-            composable("Direcciones") { DireccionesScreen(navController, placesClient) }
+            composable("Direcciones/{lugar}") {
+                val lugar= it.arguments?.getString("lugar");
+                if (lugar != null) {
+                    DireccionesScreen(navController , lugar , placesClient)
+                }
+            }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
             composable("Mapa") { MapaScreen(navController) }
