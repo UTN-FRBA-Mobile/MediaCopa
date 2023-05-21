@@ -3,6 +3,7 @@ package com.tpmobile.mediacopa.ui.screens
 import android.graphics.Color
 import android.icu.text.CaseMap.Title
 import android.text.Layout
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -19,30 +20,38 @@ import androidx.compose.ui.Modifier
 //@Preview(showBackground = true)
 @Composable
 fun LugaresScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
+//
+//    val options = listOf( "Cafes", "Restaurantes", "Tiendas", "Punto medio")
+        val options = mapOf(
+        0 to "Cafes"        ,
+        1 to "Restaurantes" ,
+        2 to "Tiendas"      ,
+        3 to "Punto medio")
 
-    val options = listOf("Cafes", "Restaurantes", "Tiendas", "Punto medio")
-    val (selectedOption, onOptionSelected) = remember { mutableStateOf(options[0]) }
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(options.keys.first()) }
 
     Column (
         verticalArrangement = Arrangement.SpaceAround,
-        modifier = Modifier.padding(20.dp),
+        modifier = Modifier.padding(top=150.dp , start=30.dp)
+
+
        ){
         Text(
             text = "Donde te gustaria encontrarte?",
             style = MaterialTheme.typography.h5,
-            modifier = Modifier.padding(bottom = 40.dp),
+            modifier = Modifier.padding(vertical = 40.dp, horizontal = 4.dp),
 
             )
-        options.forEach { option ->
+        options.forEach {  (key, value) ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RadioButton(
-                    selected = selectedOption == option,
-                    onClick = { onOptionSelected(option) }
+                    selected = selectedOption == key,
+                    onClick = { onOptionSelected(key) }
                 )
                 Text(
-                    text = option,
+                    text = value,
                 )
             }
         }
@@ -50,7 +59,9 @@ fun LugaresScreen(navController: NavController) { // hay que comentar los parame
             onClick =  {navController.navigate("Direcciones/$selectedOption") },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.padding(5.dp)
+            modifier = Modifier
+                .padding(20.dp)
+                .align(Alignment.End)
         ) {
             Text(text = "Continuar" )
         }
