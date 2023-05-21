@@ -12,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +23,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.tpmobile.mediacopa.ui.screens.*
+import com.tpmobile.mediacopa.ui.screens.AppContext.context
 import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
@@ -30,6 +34,8 @@ import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavController
+    var placesClient: PlacesClient? = null;
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -43,7 +49,11 @@ class MainActivity : ComponentActivity() {
                     AppContext.context = applicationContext
                     sharedPreferences = MySharedPreferences(AppContext.context)
                     val navController = rememberNavController()
-                    BottomMenu()
+
+                    Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY);
+                    placesClient = Places.createClient(applicationContext); // provide your application context here
+
+                    BottomMenu(placesClient ?: null)
                 }
             }
         }
@@ -53,7 +63,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 //@Preview(showBackground = true)
 @Composable
-fun BottomMenu() {
+fun BottomMenu(placesClient: PlacesClient?) {
     val navController = rememberNavController()
     Scaffold(
 
@@ -90,7 +100,7 @@ fun BottomMenu() {
             composable("Direcciones/{lugar}") {
                 val lugar= it.arguments?.getString("lugar");
                 if (lugar != null) {
-                    DireccionesScreen(navController , lugar)
+                    DireccionesScreen(navController , lugar , placesClient)
                 }
             }
             composable("Historial") { HistorialScreen(navController) }
