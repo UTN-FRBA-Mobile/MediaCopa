@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -56,10 +58,10 @@ fun BottomMenu() {
     Scaffold(
 
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("Direcciones") }) {
-                Icon(Icons.Filled.LocationOn,  //Esto hace referencia el Icono de mapa del menu de navegacion inferior
-                    contentDescription = "Direcciones", //Descripcion del boton para accesibilidad
-                    tint = Color.White)
+            FloatingActionButton(onClick = { navController.navigate("Lugares") }) {
+                Image(
+                    painter = painterResource(R.drawable.zoom),
+                    contentDescription = "Delete",)
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -75,8 +77,8 @@ fun BottomMenu() {
                     IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { navController.navigate("Lugares") }) {
-                        Icon(Icons.Filled.ShoppingCart, contentDescription = "Lugares")
+                    IconButton(onClick = { navController.navigate("Direcciones") }) {
+                        Icon(Icons.Filled.Place, contentDescription = "Direcciones")
                     }
                 }
 
