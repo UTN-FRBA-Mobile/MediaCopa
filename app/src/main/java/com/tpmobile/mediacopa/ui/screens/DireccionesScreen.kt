@@ -28,7 +28,7 @@ import com.google.maps.android.compose.GoogleMap
 
 //@Preview(showBackground = true)
 @Composable
-fun DireccionesScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
+fun DireccionesScreen(navController: NavController , lugar: String) { // hay que comentar los parametros para poder usar el preview
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,
@@ -40,6 +40,11 @@ fun DireccionesScreen(navController: NavController) { // hay que comentar los pa
             style = MaterialTheme.typography.h5,
             modifier = Modifier.padding(bottom = 20.dp , top= 20.dp),
             )
+        Text( // todo borrar es solo de pureba
+            text = lugar,
+            style = MaterialTheme.typography.h5,
+            modifier = Modifier.padding(bottom = 20.dp , top= 20.dp),
+        )
 
         var contador by remember { mutableStateOf(0) }
 
