@@ -46,9 +46,8 @@ fun LugaresScreen(navController: NavController) { // hay que comentar los parame
                 )
             }
         }
-
         Button(
-            onClick =  {navController.navigate("Direcciones") },
+            onClick =  {navController.navigate("Direcciones/$selectedOption") },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(5.dp)

@@ -87,7 +87,12 @@ fun BottomMenu() {
     ) {
 
         NavHost(navController, startDestination = "Lugares") {
-            composable("Direcciones") { DireccionesScreen(navController) }
+            composable("Direcciones/{lugar}") {
+                val lugar= it.arguments?.getString("lugar");
+                if (lugar != null) {
+                    DireccionesScreen(navController , lugar)
+                }
+            }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
             composable("Mapa") { MapaScreen(navController) }
