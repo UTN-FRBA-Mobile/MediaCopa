@@ -3,6 +3,7 @@ package com.tpmobile.mediacopa.ui.screens
 //import com.tpmobile.mediacopa.MainActivity.BottomMenu
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -111,14 +112,20 @@ fun CrearListaSeleccion(count: Int){
 }
 
 @Composable
-fun EliminarSeleccionados(count: Int){
+fun EliminarSeleccionados( count: Int){
+    var countAux= count
     if(segundoClick.value){
-        for (i in 0 until count) {
+        var i=0
+        while(i < countAux){
             if(selectedList[i]){
                 borrarSeleccionado(i)
+                countAux--
+                selectedList.removeAt(i)
+                i--
                 //AppContext.sharedPreferences.borrarSeleccionadosSesiones() //todo
 
             }
+            i++
         }
         primeraVuelta.value=false
         botonApretado.value = false
@@ -148,14 +155,16 @@ fun BotonPruebas(){
         Intermediario()} //TODO DEJO ESTO PARA USAR PARA TESTEAR A FUTURO
 
 }
-@Composable
-fun RepetirBusqueda(index: Int){
 
+//TODO
+@Composable
+fun RepetirBusqueda(index: Int) {
+    Log.d("RepetirBusqueda", "Valor de index: $index")
 }
 
 @Composable
 fun Tarjetas(){
-
+var indice=0
     Box(modifier = Modifier
         .fillMaxSize()
         .offset { IntOffset(0, 200) }) { // ESTO HACE QUE EL INICIO DEL BOX SEA 200 PIXELES MAS ABAJO
@@ -165,31 +174,114 @@ fun Tarjetas(){
                 .fillMaxWidth()
         ) {
 
-            itemsIndexed(historial) {index, instanciaHistorial ->
-                if(!botonApretado.value){
-                    Card(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp) //ESPACIO entre tarjetitas
-                            .fillMaxWidth()
-                            .clickable { tarjetaApretada.value = true },
-                        backgroundColor = Color.LightGray //TODO MaterialTheme.colors.primary VER COMO FUNCIONA ESO PARA CAMBIARLO
-                    ){
-                        if(tarjetaApretada.value){
-                            RepetirBusqueda(index)
-                        }
-                        MostrarTarjeta(index,instanciaHistorial)
+            itemsIndexed(historial) { index, instanciaHistorial ->
+
+                Card(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp) //ESPACIO entre tarjetitas
+                        .fillMaxWidth()
+                        .let {
+                            if (!botonApretado.value) {
+                                it.clickable { tarjetaApretada.value = true
+                                    indice=index}
+                            } else {
+                                it
+                            }
+                        },
+                    backgroundColor = Color.LightGray //TODO MaterialTheme.colors.primary VER COMO FUNCIONA ESO PARA CAMBIARLO
+                )
+                {
+                    if (tarjetaApretada.value) {
+                        RepetirBusqueda(indice)
+                        tarjetaApretada.value = false
                     }
 
-                }else{
-                    MostrarTarjeta(index,instanciaHistorial)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        if (botonApretado.value) {
+                            Checkbox(
+                                checked = selectedList[index],
+                                onCheckedChange = { isChecked ->
+                                    selectedList[index] = isChecked
+                                })
+
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(65.dp)
+                                .padding(end = 16.dp)
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 16.dp)
+                        ) {
+                            var imagen = R.drawable.history
+                            var descripcion = "hola"
+                            if (instanciaHistorial.tipoBusqueda == "1") {
+                                imagen = R.drawable.local_cafe
+                                var descripcion = "Cafe"
+                            } else if (instanciaHistorial.tipoBusqueda == "2") {
+                                imagen = R.drawable.restaurant_menu
+                                var descripcion = "Restaurante"
+                            } else if (instanciaHistorial.tipoBusqueda == "2") {
+                                imagen = R.drawable.storefront
+                                var descripcion = "Tienda"
+                            } else {
+                                imagen = R.drawable.location
+                                var descripcion = "Punto medio"
+                            }
+                            Image(
+                                painter =
+                                painterResource(imagen),
+                                contentDescription = descripcion,
+                                modifier = Modifier.fillMaxSize(),
+
+                                )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
+                        ) {
+                            Text(
+                                text = instanciaHistorial.midpoint,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = instanciaHistorial.direcciones[0],
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = instanciaHistorial.direcciones[1],
+                                fontSize = 20.sp
+                            )
+                            if (instanciaHistorial.direcciones.size > 2) {
+                                Text(
+                                    text = "...",
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+
+                        Image(
+                            painter = painterResource(R.drawable.history),
+                            contentDescription = "Historial",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .align(Alignment.CenterVertically)
+                                .padding(end = 8.dp)
+                        )
+
+
+                    }
                 }
-
-
             }
         }
-
     }
-
 }
 
 @Composable
@@ -197,9 +289,22 @@ fun MostrarTarjeta(index: Int, instanciaHistorial: Historial) {
     Card(
         modifier = Modifier
             .padding(vertical = 8.dp) //ESPACIO entre tarjetitas
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .let {
+                if (!botonApretado.value) {
+                    it.clickable { tarjetaApretada.value = true }
+                } else {
+                    it
+                }
+            },
         backgroundColor = Color.LightGray //TODO MaterialTheme.colors.primary VER COMO FUNCIONA ESO PARA CAMBIARLO
-    ) {
+    )
+    {
+        if(tarjetaApretada.value){
+            RepetirBusqueda(index)
+            tarjetaApretada.value=false
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -291,7 +396,7 @@ fun MostrarTarjeta(index: Int, instanciaHistorial: Historial) {
 //todoo lo de abajo hace que se muestren por pantalla las tarjetitas
 fun HistorialScreen(navController: NavController) {
     obtenerHistorial()
-    val count = historial.size
+    var count = historial.size
 
 
     Tacho(count)
@@ -305,7 +410,19 @@ fun HistorialScreen(navController: NavController) {
 class Historial(val midpoint: String, val direcciones: List<String>, val tipoBusqueda: String)
 @Composable
 fun obtenerHistorial()  {
-    historial.addAll(pedirLista())
+    val historiall: List<Historial> = listOf(
+        Historial("Pizza", listOf("Italia", "Estados Unidos", "Argentina"), "1"),
+        Historial("Sushi", listOf("Japón", "Estados Unidos", "Brasil"), "2"),
+        Historial("Hamburguesa", listOf("Estados Unidos", "Argentina", "Canadá"), "3"),
+        Historial("Tacos", listOf("México", "Estados Unidos", "España"), "4"),
+        Historial("Pasta", listOf("Italia", "Estados Unidos", "Francia"), "1"),
+        Historial("Sopa", listOf("China", "Estados Unidos", "Japón"), "2"),
+        Historial("Paella", listOf("España", "Estados Unidos", "México"), "3"),
+        Historial("Curry", listOf("India", "Estados Unidos", "Tailandia"), "4"),
+        Historial("Sushi", listOf("Japón", "Estados Unidos", "Brasil"), "2"),
+        Historial("Tacos", listOf("México", "Estados Unidos", "España"), "4")
+    )
+    historial.addAll(/*pedirLista()*/historiall )
 
 }
 

@@ -26,8 +26,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.tpmobile.mediacopa.ui.screens.*
-import com.tpmobile.mediacopa.ui.screens.AppContext.context
-import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
 
@@ -45,9 +43,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                   // AppContext.context = LocalContext.current
-                    AppContext.context = applicationContext
-                    sharedPreferences = MySharedPreferences(AppContext.context)
                     val navController = rememberNavController()
 
                     Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY);
