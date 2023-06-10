@@ -3,6 +3,7 @@ package com.tpmobile.mediacopa.ui.screens
 //import androidx.compose.foundation.layout.ColumnScopeInstance.align TODO lo comente porque no me corria el codigo y no se usaba
 import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
+import android.location.Location
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -68,8 +69,11 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
 
                     Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
 
-                    // TODO: ponerle un enter a esto y estilos un poco mejor jeje
-                    Text("Dirección ${index + 1}: ${place.value?.name}")
+                    Row() {
+                        if (place?.value != null) {
+                            Text("Dirección ${index + 1}: ${place.value?.name}")
+                        }
+                    }
 
                     var address = Address(place.value?.address,
                         place.value?.latLng,
@@ -123,7 +127,6 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
 //    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces);
 
     // TODO: llamar al back para que guarde las direcc en el historial
-
     navController.navigate("Mapa")
 }
 
