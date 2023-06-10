@@ -101,7 +101,7 @@ fun BottomMenu(placesClient: PlacesClient?) {
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("Lugares") }) {
                 Image(
-                    painter = painterResource(R.drawable.location),
+                    painter = painterResource(R.drawable.zoom),
                     contentDescription = "Delete",)
             }
         },
@@ -118,7 +118,7 @@ fun BottomMenu(placesClient: PlacesClient?) {
                     IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { navController.navigate("Direcciones") }) {
+                    IconButton(onClick = { navController.navigate("Direcciones/0") }) { // el 0 es la opcion de punto medio por si no elige nada, si llega a cambiar el enum cambiar
                         Icon(Icons.Filled.Place, contentDescription = "Direcciones")
                     }
                 }
@@ -129,7 +129,7 @@ fun BottomMenu(placesClient: PlacesClient?) {
 
         NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones/{lugar}") {
-                val lugar= it.arguments?.getString("lugar");
+                val lugar= it.arguments?.getInt("lugar");
                 if (lugar != null) {
                     DireccionesScreen(navController , lugar , placesClient)
                 }
