@@ -1,7 +1,9 @@
 package com.tpmobile.mediacopa.ui.screens
 
+// TODO: no borre el archivo porlas, pero creo que mejor usar MapViewModel, chequear
 
-import androidx.compose.runtime.Composable
+
+/*import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
@@ -13,6 +15,6 @@ import com.tpmobile.mediacopa.models.Address
 //@Preview(showBackground = true)
 @Composable
 fun MapaScreen(navController: NavController) {
-    //TODO: markers con direcciones
     GoogleMap(modifier = Modifier.fillMaxSize())
 }
+ */
