@@ -20,8 +20,7 @@ import androidx.compose.ui.Modifier
 //@Preview(showBackground = true)
 @Composable
 fun LugaresScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
-//
-//    val options = listOf( "Cafes", "Restaurantes", "Tiendas", "Punto medio")
+
         val options = mapOf(
         0 to "Cafes"        ,
         1 to "Restaurantes" ,
@@ -56,7 +55,7 @@ fun LugaresScreen(navController: NavController) { // hay que comentar los parame
             }
         }
         Button(
-            onClick =  {navController.navigate("Direcciones") },
+            onClick =  {navController.navigate("Direcciones/$selectedOption") },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier

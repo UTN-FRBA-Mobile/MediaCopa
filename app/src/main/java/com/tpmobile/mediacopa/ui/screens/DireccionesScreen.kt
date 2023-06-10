@@ -3,6 +3,7 @@ package com.tpmobile.mediacopa.ui.screens
 //import androidx.compose.foundation.layout.ColumnScopeInstance.align TODO lo comente porque no me corria el codigo y no se usaba
 import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
+import android.location.Location
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,7 +37,8 @@ import com.tpmobile.mediacopa.models.AgregarAHistorialInputModel
 
 //@Preview(showBackground = true)
 @Composable
-fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?) { // hay que comentar los parametros para poder usar el preview
+
+fun DireccionesScreen(navController: NavController, lugar: String, placesClient: PlacesClient?) { // hay que comentar los parametros para poder usar el preview
 
     val context = LocalContext.current
     val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
@@ -46,6 +48,7 @@ fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?)
     //test con 1 solo
     var suggestions by remember { mutableStateOf(emptyList<AutocompletePrediction>()) }
     var textFieldValue by remember { mutableStateOf( TextFieldValue() ) }
+
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,
@@ -68,11 +71,11 @@ fun DireccionesScreen(navController: NavController, placesClient: PlacesClient?)
 
                     Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
 
-                    // TODO: ponerle un enter a esto y estilos un poco mejor jeje
-                    Text(
-                        text= "Dirección ${index + 1}: ${place.value?.name}",
-                        modifier = Modifier.padding( vertical = 8.dp, horizontal = 5.dp)
-                    )
+                    Row() {
+                        if (place?.value != null) {
+                            Text("Dirección ${index + 1}: ${place.value?.name}")
+                        }
+                    }
 
                     var address = Address(place.value?.address,
                         place.value?.latLng,
@@ -128,7 +131,6 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
 //    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces);
 
     // TODO: llamar al back para que guarde las direcc en el historial
-
     navController.navigate("Mapa")
 }
 
