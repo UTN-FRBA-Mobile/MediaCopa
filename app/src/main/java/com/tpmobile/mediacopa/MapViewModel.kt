@@ -14,7 +14,9 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 
 
@@ -25,7 +27,16 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
 
     @Composable
     fun MapViewModel(navController: NavController) {
-        GoogleMap(modifier = Modifier.fillMaxSize())
+        var myLocation = defaultLocation;
+
+        if(state.value.lastKnownLocation != null) {
+            myLocation = LatLng(state.value.lastKnownLocation!!.latitude,  state.value.lastKnownLocation!!.longitude);
+            //TODO: la idea es que aca este en el punto medio, no en mi ubi, pero funciona
+        }
+
+        GoogleMap(modifier = Modifier.fillMaxSize(),
+            cameraPositionState = CameraPositionState(CameraPosition(myLocation, 50F, 0F, 0F))
+        )
     }
 
     val state: MutableState<MapState> = mutableStateOf(
