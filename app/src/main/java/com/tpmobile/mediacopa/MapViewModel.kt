@@ -29,13 +29,14 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     fun MapViewModel(navController: NavController) {
         var myLocation = defaultLocation;
 
+        Log.e("AAAAAAAAAAAAAA",(state.value.lastKnownLocation).toString());
         if(state.value.lastKnownLocation != null) {
             myLocation = LatLng(state.value.lastKnownLocation!!.latitude,  state.value.lastKnownLocation!!.longitude);
             //TODO: la idea es que aca este en el punto medio, no en mi ubi, pero funciona
         }
 
         GoogleMap(modifier = Modifier.fillMaxSize(),
-            cameraPositionState = CameraPositionState(CameraPosition(myLocation, 50F, 0F, 0F))
+            cameraPositionState = CameraPositionState(CameraPosition(myLocation, 25F, 0F, 0F))
         )
     }
 
@@ -46,9 +47,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     )
 
     @SuppressLint("MissingPermission")
-    fun getDeviceLocation(
-        fusedLocationProviderClient: FusedLocationProviderClient
-    ) {
+    fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient) : MapState{
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -60,6 +59,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
                     state.value = state.value.copy(
                         lastKnownLocation = task.result,
                     )
+                    Log.e("MAPAAAAAAAAAAAAAAA",(state.value.lastKnownLocation).toString());
                     if (state.value.lastKnownLocation != null) {
                         map?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
@@ -78,6 +78,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
         } catch (e: SecurityException) {
             // Show error or something
         }
+        return state.value;
     }
 
     override fun onMapReady(map: GoogleMap) {
