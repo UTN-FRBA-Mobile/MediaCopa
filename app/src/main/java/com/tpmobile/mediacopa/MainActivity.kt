@@ -4,8 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Looper
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,10 +14,11 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -31,6 +30,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.tpmobile.mediacopa.ui.screens.*
 import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
+import com.tpmobile.mediacopa.MapState
 
 
 class MainActivity : ComponentActivity() {
@@ -140,7 +140,7 @@ fun BottomMenu(placesClient: PlacesClient?, viewModel : MapViewModel, fusedLocat
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
             //composable("Mapa") { MapaScreen(navController) }
-            composable("Mapa") { MapViewModel().MapViewModel(navController) }
+            composable("Mapa") { MapViewModel().MapScreen(navController) }
         }
     }
 }

@@ -2,8 +2,13 @@ package com.tpmobile.mediacopa
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -14,10 +19,9 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.tpmobile.mediacopa.ui.screens.AppContext.context
 
 
 class MapViewModel(): ViewModel(), OnMapReadyCallback {
@@ -25,18 +29,38 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     private var defaultLocation = LatLng(-34.5986174, -58.4201076)
     private var map: GoogleMap? = null
 
-    @Composable
-    fun MapViewModel(navController: NavController) {
-        var myLocation = defaultLocation;
+    fun shareInfo() {
+        Log.e("MIDPOINTaaaa","ADDRESS MIDPOINT ES: ${MapState.midpointAddress?.streetAddress}")
+        var midpointAddress = MapState.midpointAddress; // del MapState
+        Log.e("MIDPOINT","ADDRESS MIDPOINT ES: ${midpointAddress?.streetAddress}")
 
-        //TODO me tengo que traer el punto emdio y marcarlo en el mapa
-        GoogleMap(modifier = Modifier.fillMaxSize())
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos en ${midpointAddress?.streetAddress}")
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        context.startActivity(shareIntent)
     }
 
-    val state: MutableState<MapState> = mutableStateOf(MapState(null , null))
+    @Composable
+    fun MapScreen(navController: NavController) {
+        //TODO me tengo que traer el punto emdio y marcarlo en el mapa
+        GoogleMap(modifier = Modifier.fillMaxSize())
+
+        FloatingActionButton(
+            onClick = { this.shareInfo() },
+        ) {
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = "Compartir"
+            )
+        }
+    }
 
     @SuppressLint("MissingPermission")
-    fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient) : MapState{
+    fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient){
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -45,15 +69,13 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    state.value = state.value.copy(
-                        lastKnownLocation = task.result,
-                    )
-                    Log.e("MAPAAAAAAAAAAAAAAA",(state.value.lastKnownLocation).toString());
-                    if (state.value.lastKnownLocation != null) {
+                    MapState.lastKnownLocation = task.result
+                    Log.e("MAPAAAAAAAAAAAAAAA",(MapState.lastKnownLocation).toString());
+                    if (MapState.lastKnownLocation != null) {
                         map?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
-                            LatLng(state.value.lastKnownLocation!!.latitude,
-                                state.value.lastKnownLocation!!.longitude), DEFAULT_ZOOM.toFloat()))
+                            LatLng(MapState.lastKnownLocation!!.latitude,
+                                MapState.lastKnownLocation!!.longitude), DEFAULT_ZOOM.toFloat()))
                     }
                     else {
                         Log.d(TAG, "Current location is null. Using defaults.")
@@ -67,11 +89,10 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
         } catch (e: SecurityException) {
             // Show error or something
         }
-        return state.value;
     }
 
     override fun onMapReady(map: GoogleMap) {
         this.map = map;
-        Log.e("MAP","El mapa ya cargo!!")
+        Log.i("MAP","El mapa ya cargo!!")
     }
 }
