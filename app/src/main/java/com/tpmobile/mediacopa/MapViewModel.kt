@@ -29,22 +29,11 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     fun MapViewModel(navController: NavController) {
         var myLocation = defaultLocation;
 
-        Log.e("AAAAAAAAAAAAAA",(state.value.lastKnownLocation).toString());
-        if(state.value.lastKnownLocation != null) {
-            myLocation = LatLng(state.value.lastKnownLocation!!.latitude,  state.value.lastKnownLocation!!.longitude);
-            //TODO: la idea es que aca este en el punto medio, no en mi ubi, pero funciona
-        }
-
-        GoogleMap(modifier = Modifier.fillMaxSize(),
-            cameraPositionState = CameraPositionState(CameraPosition(myLocation, 25F, 0F, 0F))
-        )
+        //TODO me tengo que traer el punto emdio y marcarlo en el mapa
+        GoogleMap(modifier = Modifier.fillMaxSize())
     }
 
-    val state: MutableState<MapState> = mutableStateOf(
-        MapState(
-            lastKnownLocation = null
-        )
-    )
+    val state: MutableState<MapState> = mutableStateOf(MapState(null , null))
 
     @SuppressLint("MissingPermission")
     fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient) : MapState{
@@ -83,6 +72,6 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         this.map = map;
-        Log.i("MAP","El mapa ya cargo!!")
+        Log.e("MAP","El mapa ya cargo!!")
     }
 }

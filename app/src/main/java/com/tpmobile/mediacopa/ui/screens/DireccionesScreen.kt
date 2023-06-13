@@ -68,61 +68,60 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
             )
 
         var cantDirecciones by remember { mutableStateOf(2) }
+        var geo by remember { mutableStateOf(false) }
 
         Column {
             repeat(cantDirecciones) { index ->
                 Row(modifier = Modifier.padding(vertical=10.dp)) {
 
-                    var geo: MapState? =  null;
                     if(index == 0){
-                        Button(onClick = { geo = viewModel.getDeviceLocation(fusedLocationProviderClient) } ,
+                        Button(onClick = {geo = true } ,
                                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier.padding(5.dp),
                         ) {
-                            Text(text = "Elegir mi ubicacion" )
+                            Text(text = "Elegir mi ubicacion")
+
                         }
-                        Log.e("QQQQQQQQQQQQQQQQQQ", (geo).toString())
-
-
+                        Log.e("QQQQQQQQQQQQQQQQQQ", (viewModel.state.value!!.lastKnownLocation!!.latitude).toString())
                     }
+
                     var place = AutoUpdatingTextField();
+
 
                     Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
 
+
                     Row() {
-                        if (geo != null) {
-                            Text("Dirección mi ubicacion  latitud: ${geo!!.lastKnownLocation!!.latitude} longitud: ${geo!!.lastKnownLocation!!.longitude}")
-                        }
-                        if (place?.value != null) {
+                        if (geo && index == 0) {
+                            Text("Mi ubicacion")
+                        } else if (place?.value != null) {
                             Text("Dirección ${index + 1}: ${place.value?.name}")
                         }
                     }
 
-                    var address : Address ;
-                        if(geo != null){
-//                            Address(
-//                                place.value?.address,
-//                                place.value?.latLng,
-//                                place.value?.types?.get(0)
-//                            );  var geo: MapState? =  null;
-                            val latitude = geo!!.lastKnownLocation!!.latitude
-                            val longitude = geo!!.lastKnownLocation!!.longitude
+                    var address : Address
 
-                            address = Address(
-                                streetAddress = null,
-                                latLong = LatLng(latitude, longitude),
-                                type = Place.Type.POINT_OF_INTEREST
-                            );
+                    if(geo && index == 0){
+                        val latitude = viewModel.state.value!!.lastKnownLocation!!.latitude
+                        val longitude = viewModel.state.value!!.lastKnownLocation!!.longitude
 
-                            Log.e("SSSSSSSSSSSSSSSSS", (address).toString())
-                        }else {
-                            address = Address(
-                                place.value?.address,
-                                place.value?.latLng,
-                                place.value?.types?.get(0)
-                            );
-                        }
+                        address = Address(
+                            streetAddress = "Mi ubicacion",
+                            latLong = LatLng(latitude, longitude),
+                            type = Place.Type.STREET_ADDRESS
+                        );
+
+                        Log.e("SSSSSSSSSSSSSSSSS", (address).toString())
+                    }else{
+
+                        address = Address(
+                            place?.value?.address,
+                            place.value?.latLng,
+                            place.value?.types?.get(0)
+                        );
+                    }
+
                     selectedPlaces.add(address);
 
                     if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
