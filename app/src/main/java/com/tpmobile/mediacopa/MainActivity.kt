@@ -4,6 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,13 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.tpmobile.mediacopa.ui.screens.*
@@ -43,7 +45,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         // Pedimos permiso para ver su ubicacion
-        askPermissions()
+        if (::fusedLocationProviderClient.isInitialized) {
+            askPermissions()}
         setContent {
             MediaCopaTPTheme {
                 // A surface container using the 'background' color from the theme
@@ -59,16 +62,14 @@ class MainActivity : ComponentActivity() {
                     Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY);
                     placesClient = Places.createClient(applicationContext); // provide your application context here
 
-                    BottomMenu(placesClient ?: null)
+                    BottomMenu(placesClient ?: null , viewModel, fusedLocationProviderClient)
                 }
             }
         }
     }
 
-
-
     // region Permiso de ubicacion
-    fun askPermissions() = when {
+    fun askPermissions()= when {
         ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -89,12 +90,14 @@ class MainActivity : ComponentActivity() {
             }
         }
     // endregion
+
+
 }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 //@Preview(showBackground = true)
 @Composable
-fun BottomMenu(placesClient: PlacesClient?) {
+fun BottomMenu(placesClient: PlacesClient?, viewModel : MapViewModel, fusedLocationProviderClient: FusedLocationProviderClient) {
     val navController = rememberNavController()
     Scaffold(
 
@@ -118,7 +121,7 @@ fun BottomMenu(placesClient: PlacesClient?) {
                     IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { navController.navigate("Direcciones/0") }) { // el 0 es la opcion de punto medio por si no elige nada, si llega a cambiar el enum cambiar
+                    IconButton(onClick = { navController.navigate("Direcciones/Place.Type.POINT_OF_INTEREST") }) {
                         Icon(Icons.Filled.Place, contentDescription = "Direcciones")
                     }
                 }
@@ -129,9 +132,9 @@ fun BottomMenu(placesClient: PlacesClient?) {
 
         NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones/{lugar}") {
-                val lugar= it.arguments?.getInt("lugar");
+                val lugar= it.arguments?.getString("lugar");
                 if (lugar != null) {
-                    DireccionesScreen(navController , lugar , placesClient)
+                    DireccionesScreen(navController , lugar , placesClient, viewModel, fusedLocationProviderClient )
                 }
             }
             composable("Historial") { HistorialScreen(navController) }

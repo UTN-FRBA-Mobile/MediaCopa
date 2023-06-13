@@ -3,6 +3,7 @@ package com.tpmobile.mediacopa.ui.screens
 //import androidx.compose.foundation.layout.ColumnScopeInstance.align TODO lo comente porque no me corria el codigo y no se usaba
 import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
+import android.content.RestrictionsManager.RESULT_ERROR
 import android.location.Location
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -23,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
@@ -33,12 +35,16 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.tpmobile.mediacopa.BuildConfig
 import com.tpmobile.mediacopa.models.Address
 import com.tpmobile.mediacopa.models.AgregarAHistorialInputModel
+import com.tpmobile.mediacopa.MainActivity
+import com.tpmobile.mediacopa.MapState
+import com.tpmobile.mediacopa.MapViewModel
 
 
 //@Preview(showBackground = true)
 @Composable
 
-fun DireccionesScreen(navController: NavController, lugar: Int, placesClient: PlacesClient?) { // hay que comentar los parametros para poder usar el preview
+fun DireccionesScreen(navController: NavController, lugar: String, placesClient: PlacesClient?,
+                      viewModel : MapViewModel, fusedLocationProviderClient: FusedLocationProviderClient) { // hay que comentar los parametros para poder usar el preview
 
     val context = LocalContext.current
     val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
@@ -62,25 +68,59 @@ fun DireccionesScreen(navController: NavController, lugar: Int, placesClient: Pl
             )
 
         var cantDirecciones by remember { mutableStateOf(2) }
+        var geo by remember { mutableStateOf(false) }
 
         Column {
             repeat(cantDirecciones) { index ->
                 Row(modifier = Modifier.padding(vertical=10.dp)) {
 
+                    if(index == 0){
+                        Button(onClick = {geo = true } ,
+                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.padding(5.dp),
+                        ) {
+                            Text(text = "Elegir mi ubicacion")
+
+                        }
+                        Log.e("QQQQQQQQQQQQQQQQQQ", (viewModel.state.value!!.lastKnownLocation!!.latitude).toString())
+                    }
+
                     var place = AutoUpdatingTextField();
+
 
                     Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
 
+
                     Row() {
-                        if (place?.value != null) {
+                        if (geo && index == 0) {
+                            Text("Mi ubicacion")
+                        } else if (place?.value != null) {
                             Text("Dirección ${index + 1}: ${place.value?.name}")
                         }
                     }
 
-                    var address = Address(place.value?.address,
-                        place.value?.latLng,
-                        place.value?.types?.get(0)
-                    );
+                    var address : Address
+
+                    if(geo && index == 0){
+                        val latitude = viewModel.state.value!!.lastKnownLocation!!.latitude
+                        val longitude = viewModel.state.value!!.lastKnownLocation!!.longitude
+
+                        address = Address(
+                            streetAddress = "Mi ubicacion",
+                            latLong = LatLng(latitude, longitude),
+                            type = Place.Type.STREET_ADDRESS
+                        );
+
+                        Log.e("SSSSSSSSSSSSSSSSS", (address).toString())
+                    }else{
+
+                        address = Address(
+                            place?.value?.address,
+                            place.value?.latLng,
+                            place.value?.types?.get(0)
+                        );
+                    }
 
                     selectedPlaces.add(address);
 
@@ -108,7 +148,7 @@ fun DireccionesScreen(navController: NavController, lugar: Int, placesClient: Pl
 
         }
         Button(
-            onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces)  },
+            onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces, lugar)  },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(5.dp),
@@ -118,7 +158,7 @@ fun DireccionesScreen(navController: NavController, lugar: Int, placesClient: Pl
     }
 }
 
-fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?>) {
+fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String) {
     //TODO: todo esto rompe asi como esta, pero es una idea mas o menos de como seria
 //    var midpointLatLong = findMidpoint(selectedPlaces[0]?.latLong!!, selectedPlaces[1]?.latLong!!);
 //    var midpointPlace = getPlaceFromLatLong(midpointLatLong);
@@ -128,7 +168,7 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
 //        midpointPlace?.types?.get(0)
 //    );
 //
-//    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces);
+//    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces , lugar);
 
     // TODO: llamar al back para que guarde las direcc en el historial
     navController.navigate("Mapa")
@@ -163,12 +203,12 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
                     placeResult.value = place;
                 }
             }
-//            AutocompleteActivity.RESULT_ERROR -> {
-//                it.data?.let {
-//                    val status = Autocomplete.getStatusFromIntent(it)
-//                    Log.i("MAP_ACTIVITY", "Place: FAIL")
-//                }
-//            }
+            RESULT_ERROR -> {
+                it.data?.let {
+                    val status = Autocomplete.getStatusFromIntent(it)
+                    Log.i("MAP_ACTIVITY", "Place: FAIL")
+                }
+            }
             RESULT_CANCELED -> {
                 // The user canceled the operation.
             }
@@ -176,7 +216,7 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
     }
 
     val launchMapInputOverlay = {
-        Places.initialize(context, BuildConfig.MAPS_API_KEY)
+//        Places.initialize(context, BuildConfig.MAPS_API_KEY)
         val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.TYPES)
         val intent = Autocomplete
             .IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
@@ -192,30 +232,12 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
                 contentDescription = "Direcciones",
                 tint = Color.White)
         }
+
     }
 
     return placeResult;
 }
 
-
-// una opcion de buscar sugerencias --> no la use al final
-//fun fetchAutocompleteSuggestions(
-//    query: String,
-//    placesClient: PlacesClient,
-//    callback: (List<AutocompletePrediction>) -> Unit
-//) {
-//    val request = FindAutocompletePredictionsRequest.builder()
-//        .setQuery(query)
-//        .build()
-//
-//    placesClient.findAutocompletePredictions(request)
-//        .addOnSuccessListener { response ->
-//            callback.invoke(response.autocompletePredictions)
-//        }
-//        .addOnFailureListener { exception ->
-//            // Handle error here
-//        }
-//}
 
 // extra - TODO: borrar cuando ya se defina como mostrar las sugerencias
 //Column {

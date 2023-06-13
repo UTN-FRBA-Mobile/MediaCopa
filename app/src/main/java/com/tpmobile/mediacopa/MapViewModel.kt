@@ -14,7 +14,9 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 
 
@@ -25,19 +27,16 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
 
     @Composable
     fun MapViewModel(navController: NavController) {
+        var myLocation = defaultLocation;
+
+        //TODO me tengo que traer el punto emdio y marcarlo en el mapa
         GoogleMap(modifier = Modifier.fillMaxSize())
     }
 
-    val state: MutableState<MapState> = mutableStateOf(
-        MapState(
-            lastKnownLocation = null
-        )
-    )
+    val state: MutableState<MapState> = mutableStateOf(MapState(null , null))
 
     @SuppressLint("MissingPermission")
-    fun getDeviceLocation(
-        fusedLocationProviderClient: FusedLocationProviderClient
-    ) {
+    fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient) : MapState{
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -49,6 +48,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
                     state.value = state.value.copy(
                         lastKnownLocation = task.result,
                     )
+                    Log.e("MAPAAAAAAAAAAAAAAA",(state.value.lastKnownLocation).toString());
                     if (state.value.lastKnownLocation != null) {
                         map?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
@@ -67,10 +67,11 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
         } catch (e: SecurityException) {
             // Show error or something
         }
+        return state.value;
     }
 
     override fun onMapReady(map: GoogleMap) {
         this.map = map;
-        Log.i("MAP","El mapa ya cargo!!")
+        Log.e("MAP","El mapa ya cargo!!")
     }
 }
