@@ -39,6 +39,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
         }
 
         val shareIntent = Intent.createChooser(sendIntent, null)
+        shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(shareIntent)
     }
 
