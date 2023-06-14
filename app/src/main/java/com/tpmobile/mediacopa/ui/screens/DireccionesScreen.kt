@@ -84,7 +84,7 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                             Text(text = "Elegir mi ubicacion")
 
                         }
-                        Log.e("QQQQQQQQQQQQQQQQQQ", (MapState.lastKnownLocation!!.latitude).toString())
+                        Log.e("lastKnownLocation: ", (MapState.lastKnownLocation!!.latitude).toString()) //borar todo
                     }
 
                     var place = AutoUpdatingTextField();
@@ -106,21 +106,21 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                     if(geo && index == 0){
                         address = Address(
                             streetAddress = "Mi ubicacion",
-                            latLong = MapState.googleMapsLatLong,
+                            latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
                             type = Place.Type.STREET_ADDRESS
                         );
 
-                        Log.e("SSSSSSSSSSSSSSSSS", (address).toString())
                     }else{
 
                         address = Address(
-                            place?.value?.address,
-                            place.value?.latLng,
-                            place.value?.types?.get(0)
+                            streetAddress= place?.value?.address,
+                            latLong= place.value?.latLng,
+                            type = place.value?.types?.get(0)
                         );
                     }
 
-                    selectedPlaces.add(address);
+                    selectedPlaces.add(index, address);
+
 
                     if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
                         IconButton(
@@ -171,10 +171,7 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
     // TODO: llamar al back para que guarde las direcc en el historial
 
     // TODO: con la respuesta del back (punto medio) + lista de address de input, guardarlo en el MapState para verlo desde el MapViewModel
-    Log.e("SELECTEDPLACESSSSSS", "selected places: ${(selectedPlaces).toString()}")
-    Log.e("SELECTEDPLACESSSSSS1111", "selected places: ${(selectedPlaces[0]).toString()}")
     MapState.midpointAddress = selectedPlaces[0]; // TODO: cambiar esa
-    Log.e("midpointttt", "mid: ${MapState.midpointAddress?.toString()} y ${MapState.midpointAddress?.latLong?.toString()}")
     navController.navigate("Mapa")
 }
 

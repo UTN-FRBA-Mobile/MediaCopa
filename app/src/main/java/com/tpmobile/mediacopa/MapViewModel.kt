@@ -30,9 +30,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     private var map: GoogleMap? = null
 
     fun shareInfo() {
-        Log.e("MIDPOINTaaaa","ADDRESS MIDPOINT ES: ${MapState.midpointAddress?.streetAddress}")
         var midpointAddress = MapState.midpointAddress; // del MapState
-        Log.e("MIDPOINT","ADDRESS MIDPOINT ES: ${midpointAddress?.streetAddress}")
 
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
@@ -70,7 +68,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     MapState.lastKnownLocation = task.result
-                    Log.e("MAPAAAAAAAAAAAAAAA",(MapState.lastKnownLocation).toString());
+                    Log.e("MAPAAAAAAAAAAAAAAA",(MapState.lastKnownLocation).toString());//todo borrar
                     if (MapState.lastKnownLocation != null) {
                         map?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
