@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
@@ -83,7 +84,7 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                             Text(text = "Elegir mi ubicacion")
 
                         }
-                        Log.e("QQQQQQQQQQQQQQQQQQ", (viewModel.state.value!!.lastKnownLocation!!.latitude).toString())
+                        Log.e("lastKnownLocation: ", (MapState.lastKnownLocation!!.latitude).toString()) //borar todo
                     }
 
                     var place = AutoUpdatingTextField();
@@ -103,26 +104,23 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                     var address : Address
 
                     if(geo && index == 0){
-                        val latitude = viewModel.state.value!!.lastKnownLocation!!.latitude
-                        val longitude = viewModel.state.value!!.lastKnownLocation!!.longitude
-
                         address = Address(
                             streetAddress = "Mi ubicacion",
-                            latLong = LatLng(latitude, longitude),
+                            latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
                             type = Place.Type.STREET_ADDRESS
                         );
 
-                        Log.e("SSSSSSSSSSSSSSSSS", (address).toString())
                     }else{
 
                         address = Address(
-                            place?.value?.address,
-                            place.value?.latLng,
-                            place.value?.types?.get(0)
+                            streetAddress= place?.value?.address,
+                            latLong= place.value?.latLng,
+                            type = place.value?.types?.get(0)
                         );
                     }
 
-                    selectedPlaces.add(address);
+                    selectedPlaces.add(index, address);
+
 
                     if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
                         IconButton(
@@ -148,7 +146,7 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
 
         }
         Button(
-            onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces, lugar)  },
+            onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces, lugar, viewModel)  },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(5.dp),
@@ -158,7 +156,7 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
     }
 }
 
-fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String) {
+fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String, viewModel: MapViewModel) {
     //TODO: todo esto rompe asi como esta, pero es una idea mas o menos de como seria
 //    var midpointLatLong = findMidpoint(selectedPlaces[0]?.latLong!!, selectedPlaces[1]?.latLong!!);
 //    var midpointPlace = getPlaceFromLatLong(midpointLatLong);
@@ -171,6 +169,9 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
 //    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces , lugar);
 
     // TODO: llamar al back para que guarde las direcc en el historial
+
+    // TODO: con la respuesta del back (punto medio) + lista de address de input, guardarlo en el MapState para verlo desde el MapViewModel
+    MapState.midpointAddress = selectedPlaces[0]; // TODO: cambiar esa
     navController.navigate("Mapa")
 }
 
@@ -237,32 +238,4 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
 
     return placeResult;
 }
-
-
-// extra - TODO: borrar cuando ya se defina como mostrar las sugerencias
-//Column {
-//    OutlinedTextField(
-//        label = { Text("Direccion") },
-//        value = textFieldValue,
-//        onValueChange = { newValue ->
-//            textFieldValue = newValue
-//            // Fetch suggestions based on the new input
-//            if (placesClient != null) {
-//                fetchAutocompleteSuggestions(newValue.text, placesClient) { predictions ->
-//                    suggestions = predictions
-//                }
-//            }
-//        },
-//        modifier = Modifier.padding(20.dp)
-//    )
-//
-//    // Display the suggestions
-//    if (suggestions.isNotEmpty()) {
-//        Column {
-//            suggestions.forEach { prediction ->
-//                Text(prediction.getPrimaryText(null).toString())
-//            }
-//        }
-//    }
-//}
 
