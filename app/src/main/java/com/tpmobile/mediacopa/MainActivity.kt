@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,14 +31,59 @@ import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.tpmobile.mediacopa.ui.screens.*
-import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
-import com.tpmobile.mediacopa.MapState
+import com.tpmobile.mediacopa.model.AddressesItem
+import com.tpmobile.mediacopa.model.Historial
+import com.tpmobile.mediacopa.model.Meeting
+import com.tpmobile.mediacopa.model.RequestMeetings
+import com.tpmobile.mediacopa.networking.ApiService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavController
     var placesClient: PlacesClient? = null;
+
+    val address1 = AddressesItem(lon = -57.4086263, lat = -35.6404408);
+    val address2 = AddressesItem(lon = -56.4086263, lat = -34.6404408);
+    val address3 = AddressesItem(lon = -55.4086263, lat = -36.6404408);
+    val listOfAddresses = listOf(address1, address2, address3);
+
+    val requestMiddlePointBody = RequestMeetings(
+        type= "CAFE",
+        addresses = listOfAddresses
+    );
+
+    fun getMiddlePoint() {
+        val retrofitBuilder =
+            Retrofit.Builder()
+                .baseUrl("http://192.168.0.110:8081/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(ApiService::class.java)
+        val retrofitData = retrofitBuilder.getMiddlePoint(requestMiddlePointBody);
+        retrofitData.enqueue(object: Callback<Meeting>{
+            override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
+                val responseBody = response.body()!!
+                val myStringBuilder = StringBuilder();
+                myStringBuilder.append(responseBody.name)
+                myStringBuilder.append("\n")
+                myStringBuilder.append(responseBody.lat)
+                myStringBuilder.append("\n")
+                myStringBuilder.append(responseBody.lon)
+                Log.d("TAG", myStringBuilder.toString());
+            }
+
+            override fun onFailure(call: Call<Meeting>, t: Throwable) {
+                Log.d("TAG", t.toString());
+            }
+        })
+    }
+
 
     // Para tener la ubicacion del dispositivo
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -47,6 +95,8 @@ class MainActivity : ComponentActivity() {
         // Pedimos permiso para ver su ubicacion
         if (::fusedLocationProviderClient.isInitialized) {
             askPermissions()}
+        getMiddlePoint()
+        getHistorial()
         setContent {
             MediaCopaTPTheme {
                 // A surface container using the 'background' color from the theme
@@ -54,15 +104,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                   // AppContext.context = LocalContext.current
-                    AppContext.context = applicationContext
-                    sharedPreferences = MySharedPreferences(AppContext.context)
                     val navController = rememberNavController()
 
                     Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY);
-                    placesClient = Places.createClient(applicationContext); // provide your application context here
+                    placesClient =
+                        Places.createClient(applicationContext); // provide your application context here
 
-                    BottomMenu(placesClient ?: null , viewModel, fusedLocationProviderClient)
+                    BottomMenu(placesClient ?: null, viewModel, fusedLocationProviderClient)
                 }
             }
         }
@@ -93,6 +141,8 @@ class MainActivity : ComponentActivity() {
 
 
 }
+
+
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 //@Preview(showBackground = true)

@@ -21,7 +21,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
-import com.tpmobile.mediacopa.ui.screens.AppContext.context
 
 
 class MapViewModel(): ViewModel(), OnMapReadyCallback {
@@ -40,7 +39,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
 
         val shareIntent = Intent.createChooser(sendIntent, null)
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        context.startActivity(shareIntent)
+//        context.startActivity(shareIntent)
     }
 
     @Composable

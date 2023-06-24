@@ -39,6 +39,8 @@ import com.tpmobile.mediacopa.models.AgregarAHistorialInputModel
 import com.tpmobile.mediacopa.MainActivity
 import com.tpmobile.mediacopa.MapState
 import com.tpmobile.mediacopa.MapViewModel
+import com.tpmobile.mediacopa.model.AddressesItem
+import com.tpmobile.mediacopa.model.RequestMeetings
 
 
 //@Preview(showBackground = true)
@@ -82,9 +84,8 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                                 modifier = Modifier.padding(5.dp),
                         ) {
                             Text(text = "Elegir mi ubicacion")
-
                         }
-                        Log.e("lastKnownLocation: ", (MapState.lastKnownLocation!!.latitude).toString()) //borar todo
+//                        Log.e("lastKnownLocation: ", (MapState.lastKnownLocation!!.latitude).toString()) //borar todo
                     }
 
                     var place = AutoUpdatingTextField();
@@ -158,6 +159,17 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
 
 fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String, viewModel: MapViewModel) {
     //TODO: todo esto rompe asi como esta, pero es una idea mas o menos de como seria
+    selectedPlaces.forEach { Log.d("TAG", it.toString()) }
+    val address1 = AddressesItem(lon = -57.4086263, lat = -35.6404408);
+    val address2 = AddressesItem(lon = -56.4086263, lat = -34.6404408);
+    val address3 = AddressesItem(lon = -55.4086263, lat = -36.6404408);
+    val listOfAddresses = listOf(address1, address2, address3);
+
+    val requestMiddlePointBody = RequestMeetings(
+        type= "CAFE",
+        addresses = listOfAddresses
+    );
+
 //    var midpointLatLong = findMidpoint(selectedPlaces[0]?.latLong!!, selectedPlaces[1]?.latLong!!);
 //    var midpointPlace = getPlaceFromLatLong(midpointLatLong);
 //
