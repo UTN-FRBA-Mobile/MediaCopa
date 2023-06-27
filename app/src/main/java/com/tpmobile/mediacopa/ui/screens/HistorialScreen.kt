@@ -135,8 +135,6 @@ fun EliminarSeleccionados( count: Int){
                 countAux--
                 selectedList.removeAt(i)
                 i--
-                //AppContext.sharedPreferences.borrarSeleccionadosSesiones() //todo
-
             }
             i++
         }
@@ -183,7 +181,8 @@ fun Tarjetas(){
         .offset { IntOffset(0, 200) }) { // ESTO HACE QUE EL INICIO DEL BOX SEA 200 PIXELES MAS ABAJO
         LazyColumn(
             modifier = Modifier
-                .padding(16.dp) //Esto es para que la tarjetita tenga un margen a los costados
+                .padding(horizontal = 16.dp, vertical = 15.dp)
+                .padding(bottom = 100.dp)
                 .fillMaxWidth()
         ) {
 
@@ -309,16 +308,9 @@ fun Tarjetas(){
 //todoo lo de abajo hace que se muestren por pantalla las tarjetitas
 fun HistorialScreen(navController: NavController) {
     var count = historial.size
-
-    Log.d("TAG", "myStringBuilder.toString()");
-    Log.d("TAG", historial[0].id.toString());
-
-
-
     Tacho(count)
     CrearListaSeleccion(count)
     EliminarSeleccionados(count)
-    BotonPruebas()
     Tarjetas()
 
 }
@@ -333,6 +325,7 @@ fun getHistorial() {
     val retrofitData = retrofitBuilder.getHistorial();
     retrofitData.enqueue(object: Callback<List<Historial>>{
         override fun onResponse(call: Call<List<Historial>>, response: Response<List<Historial>>) {
+            historial.clear()
             historial.addAll(response.body()!!)
         }
 
@@ -342,25 +335,26 @@ fun getHistorial() {
     })
 }
 
-class Historial2(val midpoint: String, val direcciones: List<String>, val tipoBusqueda: String)
-@Composable
-fun obtenerHistorial()  {
-    getHistorial()
-    val historiall: List<Historial2> = listOf(
-        Historial2("Pizza", listOf("Italia", "Estados Unidos", "Argentina"), "1"),
-        Historial2("Sushi", listOf("Japón", "Estados Unidos", "Brasil"), "2"),
-        Historial2("Hamburguesa", listOf("Estados Unidos", "Argentina", "Canadá"), "3"),
-        Historial2("Tacos", listOf("México", "Estados Unidos", "España"), "4"),
-        Historial2("Pasta", listOf("Italia", "Estados Unidos", "Francia"), "1"),
-        Historial2("Sopa", listOf("China", "Estados Unidos", "Japón"), "2"),
-        Historial2("Paella", listOf("España", "Estados Unidos", "México"), "3"),
-        Historial2("Curry", listOf("India", "Estados Unidos", "Tailandia"), "4"),
-        Historial2("Sushi", listOf("Japón", "Estados Unidos", "Brasil"), "2"),
-        Historial2("Tacos", listOf("México", "Estados Unidos", "España"), "4")
-    )
+fun deleteFromHistorial(id: String) {
+    val retrofitBuilder =
+        Retrofit.Builder()
+            .baseUrl("http://192.168.0.110:8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    val retrofitData = retrofitBuilder.deleteFromHistorial(id);
+    retrofitData.enqueue(object: Callback<String>{
+        override fun onResponse(call: Call<String>, response: Response<String>) {
 
+        }
+
+        override fun onFailure(call: Call<String>, t: Throwable) {
+            Log.d("TAG", t.toString());
+        }
+    })
 }
 
 fun borrarSeleccionado(i: Int) {
+    deleteFromHistorial(historial[i].id.toString())
     historial.removeAt(i)
 }

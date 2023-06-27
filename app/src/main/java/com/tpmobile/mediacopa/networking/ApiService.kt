@@ -15,4 +15,8 @@ interface ApiService {
 
     @GET("historial")
     fun getHistorial(): Call<List<Historial>>
+    @DELETE("historial/{id}")
+    fun deleteFromHistorial(
+        @Path("id") id: String
+    ): Call<String>
 }

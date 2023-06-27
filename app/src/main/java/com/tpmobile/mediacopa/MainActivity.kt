@@ -95,7 +95,7 @@ class MainActivity : ComponentActivity() {
         // Pedimos permiso para ver su ubicacion
         if (::fusedLocationProviderClient.isInitialized) {
             askPermissions()}
-        getMiddlePoint()
+//        getMiddlePoint()
         getHistorial()
         setContent {
             MediaCopaTPTheme {
