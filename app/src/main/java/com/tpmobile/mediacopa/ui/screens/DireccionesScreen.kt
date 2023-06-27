@@ -40,7 +40,14 @@ import com.tpmobile.mediacopa.MainActivity
 import com.tpmobile.mediacopa.MapState
 import com.tpmobile.mediacopa.MapViewModel
 import com.tpmobile.mediacopa.model.AddressesItem
+import com.tpmobile.mediacopa.model.Meeting
 import com.tpmobile.mediacopa.model.RequestMeetings
+import com.tpmobile.mediacopa.networking.ApiService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 //@Preview(showBackground = true)
@@ -157,49 +164,45 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
     }
 }
 
-fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String, viewModel: MapViewModel) {
-    //TODO: todo esto rompe asi como esta, pero es una idea mas o menos de como seria
-    selectedPlaces.forEach { Log.d("TAG", it.toString()) }
-    val address1 = AddressesItem(lon = -57.4086263, lat = -35.6404408);
-    val address2 = AddressesItem(lon = -56.4086263, lat = -34.6404408);
-    val address3 = AddressesItem(lon = -55.4086263, lat = -36.6404408);
-    val listOfAddresses = listOf(address1, address2, address3);
+var type = String()
+var lat = Float;
+var lon = Float;
+fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
+    val retrofitBuilder =
+        Retrofit.Builder()
+            .baseUrl("http://192.168.0.110:8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    val retrofitData = retrofitBuilder.getMiddlePoint(requestMiddlePointBody);
+    retrofitData.enqueue(object: Callback<Meeting> {
+        override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
+            val responseBody = response.body()!!
+            type = responseBody.type.toString()
+            lat = responseBody.lat as Float.Companion
+            lon = responseBody.lon as Float.Companion
+        }
 
+        override fun onFailure(call: Call<Meeting>, t: Throwable) {
+Log.d("error", t.toString());
+        }
+    })
+}
+
+
+fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String, viewModel: MapViewModel) {
+    val listOfAddresses = ArrayList<AddressesItem>()
+    selectedPlaces.forEach {
+        val newAddress = AddressesItem(lon = it?.latLong?.longitude, lat = it?.latLong?.latitude);
+        listOfAddresses.add(newAddress)
+    }
     val requestMiddlePointBody = RequestMeetings(
-        type= "CAFE",
+        type= lugar,
         addresses = listOfAddresses
     );
-
-//    var midpointLatLong = findMidpoint(selectedPlaces[0]?.latLong!!, selectedPlaces[1]?.latLong!!);
-//    var midpointPlace = getPlaceFromLatLong(midpointLatLong);
-//
-//    var midpointAddress = Address(midpointPlace?.address,
-//        midpointPlace?.latLng,
-//        midpointPlace?.types?.get(0)
-//    );
-//
-//    var inputModel = AgregarAHistorialInputModel(midpointAddress, selectedPlaces , lugar);
-
-    // TODO: llamar al back para que guarde las direcc en el historial
-
-    // TODO: con la respuesta del back (punto medio) + lista de address de input, guardarlo en el MapState para verlo desde el MapViewModel
-    MapState.midpointAddress = selectedPlaces[0]; // TODO: cambiar esa
-    navController.navigate("Mapa")
+    getMiddlePoint(requestMiddlePointBody)
+    navController.navigate("Mapa/"+type+"/"+ lat.toString()+"/"+lon.toString())
 }
-
-
-//TODO: hacer que ese punto medio sea de un tipo particular, y mejorar la funcion para que sean varias addresses
-fun findMidpoint(location1: LatLng, location2: LatLng): LatLng {
-    val lat = (location1.latitude + location2.latitude) / 2;
-    val lng = (location1.longitude + location2.longitude) / 2;
-    return LatLng(lat, lng);
-}
-
-fun getPlaceFromLatLong(location: LatLng): Place? {
- //TODO: capaz con Geocoder, investigar
-    return null;
-}
-
 
 @Composable
 fun AutoUpdatingTextField(): MutableState<Place?> {

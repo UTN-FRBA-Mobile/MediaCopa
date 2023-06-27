@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,14 +14,10 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,15 +28,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.tpmobile.mediacopa.ui.screens.*
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 import com.tpmobile.mediacopa.model.AddressesItem
-import com.tpmobile.mediacopa.model.Historial
-import com.tpmobile.mediacopa.model.Meeting
 import com.tpmobile.mediacopa.model.RequestMeetings
-import com.tpmobile.mediacopa.networking.ApiService
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : ComponentActivity() {
@@ -58,32 +45,6 @@ class MainActivity : ComponentActivity() {
         addresses = listOfAddresses
     );
 
-    fun getMiddlePoint() {
-        val retrofitBuilder =
-            Retrofit.Builder()
-                .baseUrl("http://192.168.0.110:8081/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(ApiService::class.java)
-        val retrofitData = retrofitBuilder.getMiddlePoint(requestMiddlePointBody);
-        retrofitData.enqueue(object: Callback<Meeting>{
-            override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
-                val responseBody = response.body()!!
-                val myStringBuilder = StringBuilder();
-                myStringBuilder.append(responseBody.name)
-                myStringBuilder.append("\n")
-                myStringBuilder.append(responseBody.lat)
-                myStringBuilder.append("\n")
-                myStringBuilder.append(responseBody.lon)
-                Log.d("TAG", myStringBuilder.toString());
-            }
-
-            override fun onFailure(call: Call<Meeting>, t: Throwable) {
-                Log.d("TAG", t.toString());
-            }
-        })
-    }
-
 
     // Para tener la ubicacion del dispositivo
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -95,7 +56,6 @@ class MainActivity : ComponentActivity() {
         // Pedimos permiso para ver su ubicacion
         if (::fusedLocationProviderClient.isInitialized) {
             askPermissions()}
-//        getMiddlePoint()
         getHistorial()
         setContent {
             MediaCopaTPTheme {
@@ -190,7 +150,14 @@ fun BottomMenu(placesClient: PlacesClient?, viewModel : MapViewModel, fusedLocat
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
             //composable("Mapa") { MapaScreen(navController) }
-            composable("Mapa") { MapViewModel().MapScreen(navController) }
+            composable("Mapa/{type}/{lat}/{lon}") {
+                val type = it.arguments?.getString("type");
+                val lat = it.arguments?.getFloat("lat");
+                val lon = it.arguments?.getFloat("lon");
+                if (type != null && lat != null && lon != null) {
+                    MapViewModel().MapScreen(navController, type, lat, lon)
+                }
+            }
         }
     }
 }

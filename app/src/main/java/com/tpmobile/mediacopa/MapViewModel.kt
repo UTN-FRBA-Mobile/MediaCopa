@@ -7,11 +7,10 @@ import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
@@ -43,9 +42,12 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     }
 
     @Composable
-    fun MapScreen(navController: NavController) {
+    fun MapScreen(navController: NavController, type: String, lat: Float, lon: Float) {
         //TODO me tengo que traer el punto emdio y marcarlo en el mapa
-        GoogleMap(modifier = Modifier.fillMaxSize())
+        Text(text = (type))
+        Text(text = lat.toString())
+        Text(text = lon.toString())
+//        GoogleMap(modifier = Modifier.fillMaxSize())
 
         FloatingActionButton(
             onClick = { this.shareInfo() },
