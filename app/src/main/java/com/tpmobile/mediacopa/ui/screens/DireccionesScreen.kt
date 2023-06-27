@@ -52,19 +52,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 //@Preview(showBackground = true)
 @Composable
-
 fun DireccionesScreen(navController: NavController, lugar: String, placesClient: PlacesClient?,
                       viewModel : MapViewModel, fusedLocationProviderClient: FusedLocationProviderClient) { // hay que comentar los parametros para poder usar el preview
+    val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
 
     val context = LocalContext.current
-    val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
-    val suggestionsList by remember { mutableStateOf(MutableList(4) { emptyList<AutocompletePrediction>() }) } // cada direccion tiene su lista de sugerencias
-    var textFieldValues by remember { mutableStateOf( mutableListOf<TextFieldValue>() ) }
 
-    //test con 1 solo
-    var suggestions by remember { mutableStateOf(emptyList<AutocompletePrediction>()) }
-    var textFieldValue by remember { mutableStateOf( TextFieldValue() ) }
-
+    Log.e("longitud", selectedPlaces.size.toString() )
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,
@@ -81,19 +75,15 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
         var geo by remember { mutableStateOf(false) }
 
         Column {
+            Button(onClick = {geo = true } ,
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.padding(5.dp),
+            ) {
+                Text(text = "Elegir mi ubicacion")
+            }
             repeat(cantDirecciones) { index ->
                 Row(modifier = Modifier.padding(vertical=10.dp)) {
-
-                    if(index == 0){
-                        Button(onClick = {geo = true } ,
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.padding(5.dp),
-                        ) {
-                            Text(text = "Elegir mi ubicacion")
-                        }
-//                        Log.e("lastKnownLocation: ", (MapState.lastKnownLocation!!.latitude).toString()) //borar todo
-                    }
 
                     var place = AutoUpdatingTextField();
 
@@ -101,13 +91,6 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                     Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
 
 
-                    Row() {
-                        if (geo && index == 0) {
-                            Text("Mi ubicacion")
-                        } else if (place?.value != null) {
-                            Text("Dirección ${index + 1}: ${place.value?.name}")
-                        }
-                    }
 
                     var address : Address
 
@@ -127,12 +110,29 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
                         );
                     }
 
-                    selectedPlaces.add(index, address);
+                    if(address.streetAddress !== null) {
 
+                        selectedPlaces.set(index, address);
+                        Log.i("longitud", selectedPlaces.size.toString());
+                    }
+
+                    Row() {
+                        if(!selectedPlaces.isEmpty()){
+                            if (geo && index == 0) {
+                                Text("Mi ubicacion")
+                            } else if (selectedPlaces[index]?.streetAddress != null) {
+                                Text("Dirección ${index + 1}: ${selectedPlaces[index]?.streetAddress}")
+                            }
+                        }
+                    }
 
                     if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
                         IconButton(
-                            onClick = { cantDirecciones -- },
+                            onClick = {
+                                if(index == 0) geo = false
+                                selectedPlaces.removeAt(index)
+                                cantDirecciones --
+                            },
 //                            modifier = Modifier.padding(top= 20.dp),
                         ) {
                             Icon(imageVector = Icons.Default.Clear, contentDescription = null)
@@ -170,7 +170,7 @@ var lon = Float;
 fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
     val retrofitBuilder =
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.110:8081/")
+            .baseUrl("http://192.168.1.44:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
@@ -192,6 +192,7 @@ Log.d("error", t.toString());
 
 fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlaces: MutableList<Address?> , lugar : String, viewModel: MapViewModel) {
     val listOfAddresses = ArrayList<AddressesItem>()
+    Log.e("longitud", selectedPlaces.size.toString() )
     selectedPlaces.forEach {
         val newAddress = AddressesItem(lon = it?.latLong?.longitude, lat = it?.latLong?.latitude);
         listOfAddresses.add(newAddress)
@@ -200,7 +201,10 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
         type= lugar,
         addresses = listOfAddresses
     );
-    getMiddlePoint(requestMiddlePointBody)
+        type = "CAFE"
+        lat = "37" as Float.Companion
+        lon = -122 as Float.Companion
+//    getMiddlePoint(requestMiddlePointBody)
     navController.navigate("Mapa/"+type+"/"+ lat.toString()+"/"+lon.toString())
 }
 
