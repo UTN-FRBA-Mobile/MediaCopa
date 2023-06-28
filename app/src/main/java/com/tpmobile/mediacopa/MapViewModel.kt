@@ -44,10 +44,11 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     @Composable
     fun MapScreen(navController: NavController, type: String, lat: Float, lon: Float) {
         //TODO me tengo que traer el punto emdio y marcarlo en el mapa
-        Text(text = (type))
-        Text(text = lat.toString())
-        Text(text = lon.toString())
-//        GoogleMap(modifier = Modifier.fillMaxSize())
+        Log.e("tipo", type)
+        Log.e("lat", lat.toString())
+        Log.e("long", lon.toString())
+
+        GoogleMap(modifier = Modifier.fillMaxSize())
 
         FloatingActionButton(
             onClick = { this.shareInfo() },

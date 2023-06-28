@@ -4,12 +4,10 @@ package com.tpmobile.mediacopa.ui.screens
 import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.RestrictionsManager.RESULT_ERROR
-import android.location.Location
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -21,22 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
-import com.tpmobile.mediacopa.BuildConfig
 import com.tpmobile.mediacopa.models.Address
-import com.tpmobile.mediacopa.models.AgregarAHistorialInputModel
-import com.tpmobile.mediacopa.MainActivity
 import com.tpmobile.mediacopa.MapState
 import com.tpmobile.mediacopa.MapViewModel
 import com.tpmobile.mediacopa.model.AddressesItem
@@ -52,107 +43,76 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 //@Preview(showBackground = true)
 @Composable
-fun DireccionesScreen(navController: NavController, lugar: String, placesClient: PlacesClient?,
-                      viewModel : MapViewModel, fusedLocationProviderClient: FusedLocationProviderClient) { // hay que comentar los parametros para poder usar el preview
-    val selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
+fun DireccionesScreen(navController: NavController, lugar: String, viewModel : MapViewModel) { // hay que comentar los parametros para poder usar el preview
 
-    val context = LocalContext.current
-
-    Log.e("longitud", selectedPlaces.size.toString() )
+    var selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
+    var addressText by remember { mutableStateOf(mutableListOf<String?>()) }
+    repeat(4) { addressText.add("") } // inicializo
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
 
-        Text(
+        Text (
             text = "Agregar direcciones clickeando el boton",
             style = MaterialTheme.typography.h5,
-            modifier = Modifier.padding(bottom = 20.dp , top= 20.dp),
-            )
+            modifier = Modifier.padding(start = 20.dp, bottom = 20.dp , top= 20.dp),
+        )
 
         var cantDirecciones by remember { mutableStateOf(2) }
-        var geo by remember { mutableStateOf(false) }
+
+        val addIcon by remember { mutableStateOf(mutableListOf<Boolean>()) }
+        repeat(4) { addIcon.add(true) }
+
+        var prueba by remember { mutableStateOf("") }
 
         Column {
-            Button(onClick = {geo = true } ,
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.padding(5.dp),
-            ) {
-                Text(text = "Elegir mi ubicacion")
-            }
             repeat(cantDirecciones) { index ->
                 Row(modifier = Modifier.padding(vertical=10.dp)) {
 
-                    var place = AutoUpdatingTextField();
-
-
-                    Log.i("LUGAR SELECCIONADO", "Place: ${place.value?.address}, ${place.value?.name} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
-
-
-
-                    var address : Address
-
-                    if(geo && index == 0){
-                        address = Address(
-                            streetAddress = "Mi ubicacion",
-                            latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
-                            type = Place.Type.STREET_ADDRESS
-                        );
-
-                    }else{
-
-                        address = Address(
-                            streetAddress= place?.value?.address,
-                            latLong= place.value?.latLng,
-                            type = place.value?.types?.get(0)
-                        );
-                    }
-
-                    if(address.streetAddress !== null) {
-
-                        selectedPlaces.set(index, address);
-                        Log.i("longitud", selectedPlaces.size.toString());
-                    }
-
-                    Row() {
-                        if(!selectedPlaces.isEmpty()){
-                            if (geo && index == 0) {
-                                Text("Mi ubicacion")
-                            } else if (selectedPlaces[index]?.streetAddress != null) {
-                                Text("Dirección ${index + 1}: ${selectedPlaces[index]?.streetAddress}")
-                            }
+                    if (index == 0) {
+                        Button(
+                            onClick = { agregarMiUbicacion(selectedPlaces, addressText) },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.padding(5.dp),
+                        ) {
+                            Text(text = "Elegir mi ubicacion")
                         }
                     }
 
-                    if (cantDirecciones > 2) { // a partir de 3 direcc, aparece un -
+                    AutoUpdatingTextField(index, selectedPlaces, addressText)
+
+                    // TODO: esto funciona pero solo cuando tocas un + o x de los botones
+                    //  (o sea un click en la pantalla), sino no se actualiza
+                    Row(horizontalArrangement = Arrangement.SpaceAround) {
+                        Text("${ addressText[index] }")
+                    }
+
+                    if (index != 0) {
                         IconButton(
                             onClick = {
-                                if(index == 0) geo = false
-                                selectedPlaces.removeAt(index)
-                                cantDirecciones --
+                                if (addIcon[index]) {
+                                    cantDirecciones++
+                                } else {
+                                    selectedPlaces.removeAll { address -> address?.position == index }
+                                    addressText[index] = ""
+                                    cantDirecciones--
+                                }
+                                addIcon[index] = !addIcon[index]
                             },
-//                            modifier = Modifier.padding(top= 20.dp),
                         ) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = null)
+                            Icon(
+                                imageVector = if (addIcon[index] && cantDirecciones < 4) Icons.Default.Add else Icons.Default.Clear,
+                                contentDescription = null
+                            )
                         }
                     }
-
-                }
-
-            }
-            if (cantDirecciones < 4) { // hasta 3 direcc, aparece un +
-                FloatingActionButton(
-                    onClick = { cantDirecciones ++ },
-                    backgroundColor = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(top= 20.dp),
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
                 }
             }
-
         }
+
         Button(
             onClick =  { agregarAHistorialYNavigateAMapa(navController, selectedPlaces, lugar, viewModel)  },
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
@@ -164,9 +124,9 @@ fun DireccionesScreen(navController: NavController, lugar: String, placesClient:
     }
 }
 
-var type = String()
-var lat = Float;
-var lon = Float;
+var type: String = ""
+var lat: Float = 0.0f;
+var lon: Float = 0.0f;
 fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
     val retrofitBuilder =
         Retrofit.Builder()
@@ -179,10 +139,9 @@ fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
         override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
             val responseBody = response.body()!!
             type = responseBody.type.toString()
-            lat = responseBody.lat as Float.Companion
-            lon = responseBody.lon as Float.Companion
+            lat = responseBody.lat.toString().toFloat()
+            lon = responseBody.lon.toString().toFloat()
         }
-
         override fun onFailure(call: Call<Meeting>, t: Throwable) {
 Log.d("error", t.toString());
         }
@@ -202,14 +161,51 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
         addresses = listOfAddresses
     );
         type = "CAFE"
-        lat = "37" as Float.Companion
-        lon = -122 as Float.Companion
+        lat = "37".toFloat()
+        lon = (-122).toFloat()
 //    getMiddlePoint(requestMiddlePointBody)
     navController.navigate("Mapa/"+type+"/"+ lat.toString()+"/"+lon.toString())
 }
 
+fun agregarMiUbicacion(selectedPlaces: MutableList<Address?>, addressText: MutableList<String?>) {
+    addressText[0] = "Mi ubicacion"
+
+    var address = Address(
+        streetAddress = addressText[0],
+        latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
+        type = Place.Type.STREET_ADDRESS,
+        position = 0
+    );
+
+    if (selectedPlaces.any { x -> x?.position == 0 }) {
+        selectedPlaces.removeAll { x -> x?.position == 0 }
+    }
+
+    selectedPlaces.add(address);
+}
+
+fun agregarPlaceALista(index: Int, selectedPlaces: MutableList<Address?>, addressText: MutableList<String?>, place: MutableState<Place?>) {
+    addressText[index] = place?.value?.name
+
+    Log.i("LUGAR SELECCIONADO", "Place: ${addressText[index]} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
+
+    var address = Address(
+        streetAddress= addressText[index],
+        latLong= place.value?.latLng,
+        type = place.value?.types?.get(0),
+        position = index
+    );
+
+    // si quiero cambiar la direccion de este boton, que la pise
+    if (selectedPlaces.any { x -> x?.position == index }) {
+        selectedPlaces.removeAll { x -> x?.position == index }
+    }
+
+    selectedPlaces.add(address);
+}
+
 @Composable
-fun AutoUpdatingTextField(): MutableState<Place?> {
+fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>, addressText: MutableList<String?>) {
     val context = LocalContext.current;
     var placeResult = remember { mutableStateOf<Place?>(null) }
 
@@ -221,6 +217,7 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
                 it.data?.let {
                     var place = Autocomplete.getPlaceFromIntent(it);
                     placeResult.value = place;
+                    agregarPlaceALista(index, selectedPlaces, addressText, placeResult);
                 }
             }
             RESULT_ERROR -> {
@@ -245,16 +242,14 @@ fun AutoUpdatingTextField(): MutableState<Place?> {
     }
 
     Column {
-
-        Button(onClick = launchMapInputOverlay) {
-//            Text("Ingresar dirección")
+        Button(onClick = launchMapInputOverlay,
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.padding(5.dp)) {
             Icon(Icons.Filled.LocationOn,
                 contentDescription = "Direcciones",
                 tint = Color.White)
         }
-
     }
-
-    return placeResult;
 }
 
