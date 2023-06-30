@@ -71,7 +71,20 @@ fun DireccionesScreen(navController: NavController, lugar: String, viewModel : M
 
                     if (index == 0) {
                         Button(
-                            onClick = { agregarMiUbicacion(selectedPlaces) },
+                            onClick = {
+                                var address = Address(
+                                    streetAddress = "Mi ubicacion",
+                                    latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
+                                    type = Place.Type.STREET_ADDRESS,
+                                    position = 0
+                                );
+
+                                if (selectedPlaces.any { x -> x?.position == 0 }) {
+                                    selectedPlaces.removeAll { x -> x?.position == 0 }
+                                }
+
+                                selectedPlaces.add(address);
+                            },
                             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.padding(5.dp),
@@ -181,40 +194,6 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
     navController.navigate("Mapa/"+type+"/"+ lat.toString()+"/"+lon.toString()+"/"+ streetAddress)
 }
 
-
-fun agregarMiUbicacion(selectedPlaces: MutableList<Address?>) {
-    var address = Address(
-        streetAddress = "Mi ubicacion",
-        latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
-        type = Place.Type.STREET_ADDRESS,
-        position = 0
-    );
-
-    if (selectedPlaces.any { x -> x?.position == 0 }) {
-        selectedPlaces.removeAll { x -> x?.position == 0 }
-    }
-
-    selectedPlaces.add(address);
-}
-
-fun agregarPlaceALista(index: Int, selectedPlaces: MutableList<Address?>, place: MutableState<Place?>) {
-
-    var address = Address(
-        streetAddress=  place?.value?.name,
-        latLong= place.value?.latLng,
-        type = place.value?.types?.get(0),
-        position = index
-    );
-
-    // si quiero cambiar la direccion de este boton, que la pise
-    if (selectedPlaces.any { x -> x?.position == index }) {
-        selectedPlaces.removeAll { x -> x?.position == index }
-    }
-
-    selectedPlaces.add(address);
-
-}
-
 @Composable
 fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>) {
     val context = LocalContext.current;
@@ -228,7 +207,19 @@ fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>) {
                 it.data?.let {
                     var place = Autocomplete.getPlaceFromIntent(it);
                     placeResult.value = place;
-                    agregarPlaceALista(index, selectedPlaces, placeResult);
+                    var address = Address(
+                        streetAddress=  placeResult?.value?.name,
+                        latLong= placeResult.value?.latLng,
+                        type = placeResult.value?.types?.get(0),
+                        position = index
+                    );
+
+                    // si quiero cambiar la direccion de este boton, que la pise
+                    if (selectedPlaces.any { x -> x?.position == index }) {
+                        selectedPlaces.removeAll { x -> x?.position == index }
+                    }
+
+                    selectedPlaces.add(address);
                 }
             }
             RESULT_ERROR -> {

@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
@@ -22,36 +21,44 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
+import com.tpmobile.mediacopa.models.Address
+
+
 class MapViewModel(): ViewModel(), OnMapReadyCallback {
     private var DEFAULT_ZOOM = 15
     private var defaultLocation = LatLng(-34.5986174, -58.4201076)
     private var map: GoogleMap? = null
 
+
     fun shareInfo() {
-        var midpointAddress = MapState.midpointAddress; // del MapState
+        var midpointAddress = MapState.midpointAddress;
 
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos en ${midpointAddress?.streetAddress}")
+            putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos en ${midpointAddress?.streetAddress.toString()}")
             type = "text/plain"
         }
 
         val shareIntent = Intent.createChooser(sendIntent, null)
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//        context.startActivity(shareIntent)
+//        context.startActivity(shareIntent) // todo no se porque falla
     }
 
     @Composable
-    fun MapScreen(navController: NavController, type: String, lat: Float, lon: Float) {
+    fun MapScreen(navController: NavController, type: String, lat: Float, lon: Float, streetAddress: String) {
         //TODO me tengo que traer el punto emdio y marcarlo en el mapa
         Log.e("tipo", type)
         Log.e("lat", lat.toString())
         Log.e("long", lon.toString())
 
         GoogleMap(modifier = Modifier.fillMaxSize())
+        MapState.midpointAddress = Address(streetAddress,  LatLng(lat.toDouble(), lon.toDouble()), null, 0)
 
         FloatingActionButton(
             onClick = { this.shareInfo() },
+            modifier = Modifier.padding(15.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Share,
