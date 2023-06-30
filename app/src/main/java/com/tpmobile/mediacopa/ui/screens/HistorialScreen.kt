@@ -318,7 +318,7 @@ fun HistorialScreen(navController: NavController) {
 fun getHistorial() {
     val retrofitBuilder =
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.110:8081/")
+            .baseUrl("http://192.168.1.44:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
@@ -338,7 +338,7 @@ fun getHistorial() {
 fun deleteFromHistorial(id: String) {
     val retrofitBuilder =
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.110:8081/")
+            .baseUrl("http:/ :8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)

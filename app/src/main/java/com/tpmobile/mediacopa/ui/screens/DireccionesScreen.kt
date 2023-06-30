@@ -46,8 +46,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 fun DireccionesScreen(navController: NavController, lugar: String, viewModel : MapViewModel) { // hay que comentar los parametros para poder usar el preview
 
     var selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
-    var addressText by remember { mutableStateOf(mutableListOf<String?>()) }
-    repeat(4) { addressText.add("") } // inicializo
 
     Column(
         verticalArrangement = Arrangement.SpaceAround,
@@ -73,7 +71,7 @@ fun DireccionesScreen(navController: NavController, lugar: String, viewModel : M
 
                     if (index == 0) {
                         Button(
-                            onClick = { agregarMiUbicacion(selectedPlaces, addressText) },
+                            onClick = { agregarMiUbicacion(selectedPlaces) },
                             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.padding(5.dp),
@@ -82,12 +80,19 @@ fun DireccionesScreen(navController: NavController, lugar: String, viewModel : M
                         }
                     }
 
-                    AutoUpdatingTextField(index, selectedPlaces, addressText)
+                    AutoUpdatingTextField(index, selectedPlaces)
 
                     // TODO: esto funciona pero solo cuando tocas un + o x de los botones
                     //  (o sea un click en la pantalla), sino no se actualiza
-                    Row(horizontalArrangement = Arrangement.SpaceAround) {
-                        Text("${ addressText[index] }")
+                    Log.e("ZICEEE", selectedPlaces.size.toString() );
+
+                    if(selectedPlaces.isNotEmpty()) {
+                        Log.e("siccccc", selectedPlaces.size.toString() );
+                        var texto = buscarAdress(index, selectedPlaces);
+                        Log.e("ADRESSS", texto)
+                        Row(horizontalArrangement = Arrangement.SpaceAround) {
+                            Text(texto)
+                        }
                     }
 
                     if (index != 0) {
@@ -97,7 +102,6 @@ fun DireccionesScreen(navController: NavController, lugar: String, viewModel : M
                                     cantDirecciones++
                                 } else {
                                     selectedPlaces.removeAll { address -> address?.position == index }
-                                    addressText[index] = ""
                                     cantDirecciones--
                                 }
                                 addIcon[index] = !addIcon[index]
@@ -127,6 +131,7 @@ fun DireccionesScreen(navController: NavController, lugar: String, viewModel : M
 var type: String = ""
 var lat: Float = 0.0f;
 var lon: Float = 0.0f;
+var streetAddress : String = ""
 fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
     val retrofitBuilder =
         Retrofit.Builder()
@@ -141,11 +146,19 @@ fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
             type = responseBody.type.toString()
             lat = responseBody.lat.toString().toFloat()
             lon = responseBody.lon.toString().toFloat()
+            streetAddress = responseBody.streetAddress.toString()
         }
         override fun onFailure(call: Call<Meeting>, t: Throwable) {
 Log.d("error", t.toString());
         }
     })
+}
+@Composable
+fun buscarAdress(index: Int, selectedPlaces: MutableList<Address?>  ): String {
+    var texto = selectedPlaces.filter{ addres -> addres?.position == index }. first()?.streetAddress;
+    if(texto !== null){
+        return texto
+    }else return "";
 }
 
 
@@ -163,15 +176,15 @@ fun agregarAHistorialYNavigateAMapa(navController : NavController, selectedPlace
         type = "CAFE"
         lat = "37".toFloat()
         lon = (-122).toFloat()
+        streetAddress = "Alamafuerte 1439"
 //    getMiddlePoint(requestMiddlePointBody)
-    navController.navigate("Mapa/"+type+"/"+ lat.toString()+"/"+lon.toString())
+    navController.navigate("Mapa/"+type+"/"+ lat.toString()+"/"+lon.toString()+"/"+ streetAddress)
 }
 
-fun agregarMiUbicacion(selectedPlaces: MutableList<Address?>, addressText: MutableList<String?>) {
-    addressText[0] = "Mi ubicacion"
 
+fun agregarMiUbicacion(selectedPlaces: MutableList<Address?>) {
     var address = Address(
-        streetAddress = addressText[0],
+        streetAddress = "Mi ubicacion",
         latLong =  LatLng(MapState.lastKnownLocation!!.latitude, MapState.lastKnownLocation!!.longitude),
         type = Place.Type.STREET_ADDRESS,
         position = 0
@@ -184,13 +197,10 @@ fun agregarMiUbicacion(selectedPlaces: MutableList<Address?>, addressText: Mutab
     selectedPlaces.add(address);
 }
 
-fun agregarPlaceALista(index: Int, selectedPlaces: MutableList<Address?>, addressText: MutableList<String?>, place: MutableState<Place?>) {
-    addressText[index] = place?.value?.name
-
-    Log.i("LUGAR SELECCIONADO", "Place: ${addressText[index]} - LatLong ${place.value?.latLng} - Tipo ${place.value?.types}");
+fun agregarPlaceALista(index: Int, selectedPlaces: MutableList<Address?>, place: MutableState<Place?>) {
 
     var address = Address(
-        streetAddress= addressText[index],
+        streetAddress=  place?.value?.name,
         latLong= place.value?.latLng,
         type = place.value?.types?.get(0),
         position = index
@@ -202,10 +212,11 @@ fun agregarPlaceALista(index: Int, selectedPlaces: MutableList<Address?>, addres
     }
 
     selectedPlaces.add(address);
+
 }
 
 @Composable
-fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>, addressText: MutableList<String?>) {
+fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>) {
     val context = LocalContext.current;
     var placeResult = remember { mutableStateOf<Place?>(null) }
 
@@ -217,7 +228,7 @@ fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>, add
                 it.data?.let {
                     var place = Autocomplete.getPlaceFromIntent(it);
                     placeResult.value = place;
-                    agregarPlaceALista(index, selectedPlaces, addressText, placeResult);
+                    agregarPlaceALista(index, selectedPlaces, placeResult);
                 }
             }
             RESULT_ERROR -> {

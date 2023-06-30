@@ -146,12 +146,14 @@ fun BottomMenu(viewModel : MapViewModel) {
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
             //composable("Mapa") { MapaScreen(navController) }
-            composable("Mapa/{type}/{lat}/{lon}") {
+            composable("Mapa/{type}/{lat}/{lon}/{streetAddress}") {
                 val type = it.arguments?.getString("type")
                 val lat = it.arguments?.getFloat("lat")
                 val lon = it.arguments?.getFloat("lon")
-                if (type != null && lat != null && lon != null) {
-                    MapViewModel().MapScreen(navController, type, lat, lon)
+                val streetAddress = it.arguments?.getString("streetAddress")
+
+                if (type != null && lat != null && lon != null && streetAddress != null ) {
+                    MapViewModel().MapScreen(navController, type, lat, lon, streetAddress)
                 }
             }
         }
