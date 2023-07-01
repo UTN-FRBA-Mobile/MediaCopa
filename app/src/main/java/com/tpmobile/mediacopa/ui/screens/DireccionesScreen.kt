@@ -51,7 +51,9 @@ class DireccionesViewModel(): ViewModel() {
         viewModel: MapViewModel
     ) { // hay que comentar los parametros para poder usar el preview
 
-        var selectedPlaces by remember { mutableStateOf(mutableListOf<Address?>()) }
+        var addressEmpty = AddressesItem()
+
+        var selectedPlaces by remember { mutableStateOf(mutableListOf<AddressesItem?>()) }
 
         Column(
             verticalArrangement = Arrangement.SpaceAround,

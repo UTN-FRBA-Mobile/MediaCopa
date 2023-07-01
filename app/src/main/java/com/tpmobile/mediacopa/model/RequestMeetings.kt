@@ -12,6 +12,8 @@ data class RequestMeetings(
 )
 
 data class AddressesItem(
+	@field:SerializedName("streetAddress")
+	val streetAddress: Any? = null,
 
 	@field:SerializedName("lon")
 	val lon: Any? = null,
