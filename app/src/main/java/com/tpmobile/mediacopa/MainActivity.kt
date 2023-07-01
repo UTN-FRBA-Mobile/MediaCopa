@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -139,18 +140,19 @@ fun BottomMenu(viewModel : MapViewModel) {
         NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones/{lugar}") {
                 val lugar= it.arguments?.getString("lugar")
+
                 if (lugar != null) {
-                    DireccionesScreen(navController , lugar, viewModel)
+                    DireccionesViewModel().DireccionesScreen(navController , lugar, viewModel)
                 }
             }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
-            //composable("Mapa") { MapaScreen(navController) }
             composable("Mapa/{type}/{lat}/{lon}/{streetAddress}") {
                 val type = it.arguments?.getString("type")
-                val lat = it.arguments?.getFloat("lat")
-                val lon = it.arguments?.getFloat("lon")
+                val lat = it.arguments?.getDouble("lat")
+                val lon = it.arguments?.getDouble("lon")
                 val streetAddress = it.arguments?.getString("streetAddress")
+
 
                 if (type != null && lat != null && lon != null && streetAddress != null ) {
                     MapViewModel().MapScreen(navController, type, lat, lon, streetAddress)

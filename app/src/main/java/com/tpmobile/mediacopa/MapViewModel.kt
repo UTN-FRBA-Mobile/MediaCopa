@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.CameraPositionState
 import com.tpmobile.mediacopa.models.Address
+//import com.tpmobile.mediacopa.ui.screens.AppContext.context
 
 
 class MapViewModel(): ViewModel(), OnMapReadyCallback {
@@ -48,7 +49,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     }
 
     @Composable
-    fun MapScreen(navController: NavController, type: String, lat: Float, lon: Float, streetAddress: String) {
+    fun MapScreen(navController: NavController, type: String, lat: Double, lon: Double, streetAddress: String) {
         //TODO me tengo que traer el punto emdio y marcarlo en el mapa
         Log.e("tipo", type)
         Log.e("lat", lat.toString())
@@ -83,9 +84,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     MapState.lastKnownLocation = task.result
-                    Log.e("MAPAAAAAAAAAAAAAAA",(MapState.lastKnownLocation).toString());//todo borrar
                     if (MapState.lastKnownLocation != null) {
-                        Log.e("MAPa",(map == null).toString())
                         map?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                             LatLng(MapState.lastKnownLocation!!.latitude,
