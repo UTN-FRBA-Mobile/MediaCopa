@@ -23,6 +23,8 @@ import com.google.maps.android.compose.GoogleMap
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.CameraPositionState
 import com.tpmobile.mediacopa.models.Address
 
 
@@ -30,7 +32,6 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     private var DEFAULT_ZOOM = 15
     private var defaultLocation = LatLng(-34.5986174, -58.4201076)
     private var map: GoogleMap? = null
-
 
     fun shareInfo() {
         var midpointAddress = MapState.midpointAddress;
@@ -53,7 +54,11 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
         Log.e("lat", lat.toString())
         Log.e("long", lon.toString())
 
-        GoogleMap(modifier = Modifier.fillMaxSize())
+        GoogleMap(
+            modifier = Modifier.fillMaxSize() ,
+            cameraPositionState = CameraPositionState(CameraPosition(LatLng(lat.toDouble(), lon.toDouble()), DEFAULT_ZOOM.toFloat(), 0F, 0F))
+        )
+
         MapState.midpointAddress = Address(streetAddress,  LatLng(lat.toDouble(), lon.toDouble()), null, 0)
 
         FloatingActionButton(
@@ -80,6 +85,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
                     MapState.lastKnownLocation = task.result
                     Log.e("MAPAAAAAAAAAAAAAAA",(MapState.lastKnownLocation).toString());//todo borrar
                     if (MapState.lastKnownLocation != null) {
+                        Log.e("MAPa",(map == null).toString())
                         map?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                             LatLng(MapState.lastKnownLocation!!.latitude,
@@ -101,6 +107,6 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         this.map = map;
-        Log.i("MAP","El mapa ya cargo!!")
+        Log.e("MAP","El mapa ya cargo!!")
     }
 }
