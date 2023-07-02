@@ -1,31 +1,33 @@
 package com.tpmobile.mediacopa
 
+
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.content.Intent.getIntent
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-
-
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
-import com.tpmobile.mediacopa.models.Address
+import com.google.maps.android.compose.GoogleMap
+import com.tpmobile.mediacopa.models.PuntoMedio
+
+
 //import com.tpmobile.mediacopa.ui.screens.AppContext.context
 
 
@@ -49,18 +51,16 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
     }
 
     @Composable
-    fun MapScreen(navController: NavController, type: String, lat: Double, lon: Double, streetAddress: String) {
+    fun MapScreen(navController: NavController) {
         //TODO me tengo que traer el punto emdio y marcarlo en el mapa
-        Log.e("tipo", type)
-        Log.e("lat", lat.toString())
-        Log.e("long", lon.toString())
 
-        GoogleMap(
-            modifier = Modifier.fillMaxSize() ,
-            cameraPositionState = CameraPositionState(CameraPosition(LatLng(lat.toDouble(), lon.toDouble()), DEFAULT_ZOOM.toFloat(), 0F, 0F))
-        )
+        if(PuntoMedio.latLong != null) {
+            GoogleMap(modifier = Modifier.fillMaxSize(),
+                cameraPositionState = CameraPositionState(CameraPosition(PuntoMedio.latLong!!,DEFAULT_ZOOM.toFloat(),0F,0F) )
+            )
+        }
 
-        MapState.midpointAddress = Address(streetAddress,  LatLng(lat.toDouble(), lon.toDouble()), null, 0)
+        MapState.midpointAddress = PuntoMedio
 
         FloatingActionButton(
             onClick = { this.shareInfo() },
@@ -72,6 +72,7 @@ class MapViewModel(): ViewModel(), OnMapReadyCallback {
             )
         }
     }
+
 
     @SuppressLint("MissingPermission")
     fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient){
