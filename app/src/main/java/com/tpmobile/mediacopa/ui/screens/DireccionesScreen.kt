@@ -107,7 +107,7 @@ class DireccionesViewModel(): ViewModel() {
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.padding(5.dp),
+                    modifier = Modifier.padding(20.dp).align(Alignment.End)
                 ) {
                     Text(text = "Buscar punto medio")
                 }
