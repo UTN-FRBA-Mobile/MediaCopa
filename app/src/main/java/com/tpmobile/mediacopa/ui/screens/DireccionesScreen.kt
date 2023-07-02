@@ -43,52 +43,54 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 var selectedPlaces =  mutableStateListOf<AddressesItem>()
+var type: String = ""
+var lat: Double = 0.0;
+var lon: Double = 0.0;
+var streetAddress: String = ""
+var miUbi : Boolean = false;
+
+
 class DireccionesViewModel(): ViewModel() {
     //@Preview(showBackground = true)
     @Composable
-    fun DireccionesScreen(
-        navController: NavController,
-        lugar: String,
-        viewModel: MapViewModel
-    ) { // hay que comentar los parametros para poder usar el preview
-
-        var addressEmpty = AddressesItem()
-
+    fun DireccionesScreen(navController: NavController, lugar: String,viewModel: MapViewModel ) {
 
         Column(
             verticalArrangement = Arrangement.SpaceAround,
-            horizontalAlignment = Alignment.CenterHorizontally
+//            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
                 text = "Agregar direcciones clickeando el boton",
                 style = MaterialTheme.typography.h5,
-                modifier = Modifier.padding(start = 50.dp, bottom = 20.dp, top = 20.dp),
+                modifier = Modifier.padding(start = 30.dp, end = 8.dp, bottom = 30.dp, top = 200.dp),
             )
 
-            var cantDirecciones by remember { mutableStateOf(2) }
 
-            if(selectedPlaces.size < 4){
-                Row() {
-                    Button(
-                        onClick = {
-                            var address = AddressesItem(
-                                streetAddress = "Mi ubicacion",
-                                lat = MapState.lastKnownLocation!!.latitude,
-                                lon = MapState.lastKnownLocation!!.longitude
+            Row() {
+                if(selectedPlaces.size < 4){
+                    AutoUpdatingTextField()
 
-                            );
-
-                            selectedPlaces.add(address)
-                        },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.padding(5.dp),
-                    ) {
-                        Text(text = "Elegir mi ubicacion")
+                    if(!miUbi) {
+                        Button(
+                            onClick = {
+                                var address = AddressesItem(
+                                    streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
+                                    lat = MapState.lastKnownLocation!!.latitude,
+                                    lon = MapState.lastKnownLocation!!.longitude
+                                );
+                               selectedPlaces.add(address)
+                                miUbi=true;
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.padding(start=5.dp),
+                        ) {
+                            Text(text = "Mi ubicacion")
+                        }
                     }
 
-                    AutoUpdatingTextField()
+
                 }
             }
 
@@ -119,19 +121,22 @@ class DireccionesViewModel(): ViewModel() {
     fun mostrarAddress(){
         LazyColumn(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 15.dp)
-                .padding(bottom = 100.dp)
+                .padding(horizontal = 30.dp, vertical = 15.dp)
                 .fillMaxWidth()
         ) {
 
             itemsIndexed(selectedPlaces) { index, place ->
                 Row() {
                     Text(text = place?.streetAddress.toString(),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 15.dp)
+                        modifier = Modifier.padding(vertical = 15.dp)
                             )
                     IconButton(
                         onClick = {
+                            if(selectedPlaces[index].streetAddress.toString() == "Mi ubicacion"){
+                                miUbi= false;
+                            }
                             selectedPlaces.removeAt(index)
+
                         },
                     ) {
                         Icon(
@@ -200,7 +205,7 @@ class DireccionesViewModel(): ViewModel() {
                 onClick = launchMapInputOverlay,
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                 shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.padding(start = 30.dp, end=5.dp)
             ) {
                 Icon(
                     Icons.Filled.LocationOn,
@@ -211,12 +216,6 @@ class DireccionesViewModel(): ViewModel() {
         }
     }
 
-
-
-    var type: String = ""
-    var lat: Double = 0.0;
-    var lon: Double = 0.0;
-    var streetAddress: String = ""
     fun agregarAHistorialYNavigateAMapa(navController: NavController,lugar: String,viewModel: MapViewModel) {
         val listOfAddresses = ArrayList<AddressesItem>()
         selectedPlaces.forEach {
