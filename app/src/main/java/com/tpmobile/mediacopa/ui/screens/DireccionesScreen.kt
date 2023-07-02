@@ -5,9 +5,12 @@ import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.RestrictionsManager.RESULT_ERROR
 import android.util.Log
+import android.util.MutableInt
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -42,6 +45,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+var selectedPlaces =  mutableStateListOf<AddressesItem>()
 class DireccionesViewModel(): ViewModel() {
     //@Preview(showBackground = true)
     @Composable
@@ -53,7 +57,6 @@ class DireccionesViewModel(): ViewModel() {
 
         var addressEmpty = AddressesItem()
 
-        var selectedPlaces by remember { mutableStateOf(mutableListOf<AddressesItem?>()) }
 
         Column(
             verticalArrangement = Arrangement.SpaceAround,
@@ -63,95 +66,53 @@ class DireccionesViewModel(): ViewModel() {
             Text(
                 text = "Agregar direcciones clickeando el boton",
                 style = MaterialTheme.typography.h5,
-                modifier = Modifier.padding(start = 20.dp, bottom = 20.dp, top = 20.dp),
+                modifier = Modifier.padding(start = 50.dp, bottom = 20.dp, top = 20.dp),
             )
 
             var cantDirecciones by remember { mutableStateOf(2) }
 
-            val addIcon by remember { mutableStateOf(mutableListOf<Boolean>()) }
-            repeat(4) { addIcon.add(true) }
+            if(selectedPlaces.size < 4){
+                Row() {
+                    Button(
+                        onClick = {
+                            var address = AddressesItem(
+                                streetAddress = "Mi ubicacion",
+                                lat = MapState.lastKnownLocation!!.latitude,
+                                lon = MapState.lastKnownLocation!!.longitude
 
-            var prueba by remember { mutableStateOf("") }
+                            );
 
-            Column {
-                repeat(cantDirecciones) { index ->
-                    Row(modifier = Modifier.padding(vertical = 10.dp)) {
-
-                        if (index == 0) {
-                            Button(
-                                onClick = {
-                                    var address = Address(
-                                        streetAddress = "Mi ubicacion",
-                                        latLong = LatLng(
-                                            MapState.lastKnownLocation!!.latitude,
-                                            MapState.lastKnownLocation!!.longitude
-                                        ),
-                                        type = Place.Type.STREET_ADDRESS,
-                                        position = 0
-                                    );
-
-                                    if (selectedPlaces.any { x -> x?.position == 0 }) {
-                                        selectedPlaces.removeAll { x -> x?.position == 0 }
-                                    }
-
-                                    selectedPlaces.add(address);
-                                },
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.padding(5.dp),
-                            ) {
-                                Text(text = "Elegir mi ubicacion")
-                            }
-                        }
-
-                        AutoUpdatingTextField(index, selectedPlaces)
-
-                        // TODO: esto funciona pero solo cuando tocas un + o x de los botones
-                        //  (o sea un click en la pantalla), sino no se actualiza
-
-                        if (selectedPlaces.isNotEmpty()) {
-                            var texto = buscarAdress(index, selectedPlaces);
-                            Row(horizontalArrangement = Arrangement.SpaceAround) {
-                                Text(texto)
-                            }
-                        }
-
-                        if (index != 0) {
-                            IconButton(
-                                onClick = {
-                                    if (addIcon[index]) {
-                                        cantDirecciones++
-                                    } else {
-                                        selectedPlaces.removeAll { address -> address?.position == index }
-                                        cantDirecciones--
-                                    }
-                                    addIcon[index] = !addIcon[index]
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = if (addIcon[index] && cantDirecciones < 4) Icons.Default.Add else Icons.Default.Clear,
-                                    contentDescription = null
-                                )
-                            }
-                        }
+                            selectedPlaces.add(address)
+                            Log.e("cant de adrees", selectedPlaces.size.toString());
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.padding(5.dp),
+                    ) {
+                        Text(text = "Elegir mi ubicacion")
                     }
+
+                    AutoUpdatingTextField()
                 }
             }
 
-            Button(
-                onClick = {
-                    agregarAHistorialYNavigateAMapa(
-                        navController,
-                        selectedPlaces,
-                        lugar,
-                        viewModel
-                    )
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.padding(5.dp),
-            ) {
-                Text(text = "Buscar punto medio")
+            mostrarAddress()
+
+            if(selectedPlaces.size >= 2 ){
+                Button(
+                    onClick = {
+                        agregarAHistorialYNavigateAMapa(
+                            navController,
+                            lugar,
+                            viewModel
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.padding(5.dp),
+                ) {
+                    Text(text = "Buscar punto medio")
+                }
             }
         }
     }
@@ -184,25 +145,51 @@ class DireccionesViewModel(): ViewModel() {
     }
 
     @Composable
-    fun buscarAdress(index: Int, selectedPlaces: MutableList<Address?>): String {
-        var texto =
-            selectedPlaces.filter { addres -> addres?.position == index }.first()?.streetAddress;
-        if (texto !== null) {
-            return texto
-        } else return "";
-    }
+    fun mostrarAddress(){
+        LazyColumn(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 15.dp)
+                .padding(bottom = 100.dp)
+                .fillMaxWidth()
+        ) {
 
+            itemsIndexed(selectedPlaces) { index, place ->
+                Log.e("cant de adrees", selectedPlaces.size.toString());
+
+
+                Row() {
+                    Text(text = place?.streetAddress.toString(),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 15.dp)
+                            )
+
+                    IconButton(
+                        onClick = {
+                            selectedPlaces.removeAt(index)
+//                            cantDirecciones--
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+
+            }
+
+        }
+    }
 
     fun agregarAHistorialYNavigateAMapa(
         navController: NavController,
-        selectedPlaces: MutableList<Address?>,
         lugar: String,
         viewModel: MapViewModel
     ) {
         val listOfAddresses = ArrayList<AddressesItem>()
         selectedPlaces.forEach {
             val newAddress =
-                AddressesItem(lon = it?.latLong?.longitude, lat = it?.latLong?.latitude);
+                AddressesItem(lon = it?.lon, lat = it?.lat);
             listOfAddresses.add(newAddress)
         }
         val requestMiddlePointBody = RequestMeetings(
@@ -219,7 +206,7 @@ class DireccionesViewModel(): ViewModel() {
     }
 
     @Composable
-    fun AutoUpdatingTextField(index: Int, selectedPlaces: MutableList<Address?>) {
+    fun AutoUpdatingTextField() {
         val context = LocalContext.current;
         var placeResult = remember { mutableStateOf<Place?>(null) }
 
@@ -231,19 +218,13 @@ class DireccionesViewModel(): ViewModel() {
                     it.data?.let {
                         var place = Autocomplete.getPlaceFromIntent(it);
                         placeResult.value = place;
-                        var address = Address(
+                        var address = AddressesItem(
                             streetAddress = placeResult?.value?.name,
-                            latLong = placeResult.value?.latLng,
-                            type = placeResult.value?.types?.get(0),
-                            position = index
+                            lat = placeResult.value?.latLng?.latitude,
+                            lon= placeResult.value?.latLng?.longitude,
+
                         );
-
-                        // si quiero cambiar la direccion de este boton, que la pise
-                        if (selectedPlaces.any { x -> x?.position == index }) {
-                            selectedPlaces.removeAll { x -> x?.position == index }
-                        }
-
-                        selectedPlaces.add(address);
+                        selectedPlaces.add(address)
                     }
                 }
                 RESULT_ERROR -> {
