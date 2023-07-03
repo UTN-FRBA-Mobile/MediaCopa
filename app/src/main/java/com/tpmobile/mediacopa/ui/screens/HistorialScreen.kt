@@ -1,8 +1,11 @@
 package com.tpmobile.mediacopa.ui.screens
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 
 //import com.tpmobile.mediacopa.MainActivity.BottomMenu
 import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -11,12 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -33,11 +31,19 @@ import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import com.tpmobile.mediacopa.R
+import com.tpmobile.mediacopa.model.Historial
+import com.tpmobile.mediacopa.networking.ApiService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 /*
 CADA VEZ QUE SE QUIERA AGREGAR ALGO AL HISTORIAL SE DEBE HACER LO SIGUIENTE
@@ -55,14 +61,14 @@ val sharedPreferences = MySharedPreferences(context)
 
 @Composable
 fun BotonDelete(){
-    AppContext.sharedPreferences.borrarNombresGuardados()
+    //  AppContext.sharedPreferences.borrarNombresGuardados()
     botonApretado.value=false
 
 }
 
 @Composable
 fun Intermediario(){
-    agregarAHistorial("b","a","a","2" )
+    // agregarAHistorial("b","a","a","2" )
     botonApretado2.value=false
 
 }
@@ -73,15 +79,12 @@ val selectedList =  mutableStateListOf<Boolean>()
 val primeraVuelta = mutableStateOf(false)
 val primeraVueltaAlfa = mutableStateOf(false)
 val segundoClick = mutableStateOf(false)
+var tarjetaApretada = mutableStateOf(false)
+var historial  = mutableStateListOf<Historial>()
 
-//TODO HACER ESTA FUNCION MAS LEGIBLE
 @Composable
-//todoo lo de abajo hace que se muestren por pantalla las tarjetitas
-fun HistorialScreen(navController: NavController) {
-    val count = AppContext.nombresGuardados.size
-    mostrarGuardados()
-    //BotonDelete()
-    Box(Modifier.fillMaxSize()) {
+fun Tacho(count:Int){
+    Box(Modifier.fillMaxSize( )) {
         Image(
             painter = painterResource(R.drawable.delete),
             contentDescription = "Delete",
@@ -92,37 +95,59 @@ fun HistorialScreen(navController: NavController) {
                 .align(Alignment.TopEnd)
                 .clickable {
                     if (count != 0) {
-                        if (primeraVueltaAlfa.value) {
-                            segundoClick.value = true
-                        }
                         botonApretado.value = true
                         primeraVuelta.value = true
+
+
+                        if (primeraVueltaAlfa.value) {
+                            segundoClick.value = true
+                            primeraVuelta.value = false
+                        }
                         primeraVueltaAlfa.value = true
+
                     }
                 }
 
         )
     }
-   if(botonApretado.value and primeraVuelta.value){
+}
 
-       for (i in 0 until count) {
-           selectedList.add(false)
-       }
-    primeraVuelta.value=false
-   }
-    if(segundoClick.value){
+@Composable
+fun CrearListaSeleccion(count: Int){
+    if(botonApretado.value and primeraVuelta.value){
+
         for (i in 0 until count) {
-            if(selectedList[i]){
-                AppContext.sharedPreferences.borrarSeleccionado(i)
-                AppContext.sharedPreferences.borrarSeleccionadosSesiones()
+            selectedList.add(false)
+        }
+        primeraVuelta.value=false
+    }
 
-                }
+}
+
+@Composable
+fun EliminarSeleccionados( count: Int){
+    var countAux= count
+    if(segundoClick.value){
+        var i=0
+        while(i < countAux){
+            if(selectedList[i]){
+                borrarSeleccionado(i)
+                countAux--
+                selectedList.removeAt(i)
+                i--
+            }
+            i++
         }
         primeraVuelta.value=false
         botonApretado.value = false
         segundoClick.value=false
         primeraVueltaAlfa.value=false
+        selectedList.clear()
     }
+}
+
+@Composable
+fun BotonPruebas(){
 
     Box(Modifier.fillMaxSize()) {
         Image(
@@ -140,193 +165,196 @@ fun HistorialScreen(navController: NavController) {
     if(botonApretado2.value){
         Intermediario()} //TODO DEJO ESTO PARA USAR PARA TESTEAR A FUTURO
 
-    Box(modifier = Modifier.fillMaxSize()
+}
+
+//TODO
+@Composable
+fun RepetirBusqueda(index: Int) {
+    Log.d("RepetirBusqueda", "Valor de index: $index")
+}
+
+@Composable
+fun Tarjetas(){
+    var indice=0
+    Box(modifier = Modifier
+        .fillMaxSize()
         .offset { IntOffset(0, 200) }) { // ESTO HACE QUE EL INICIO DEL BOX SEA 200 PIXELES MAS ABAJO
-    LazyColumn(
-        modifier = Modifier
-            .padding(16.dp) //Esto es para que la tarjetita tenga un margen a los costados
-            .fillMaxWidth()
-    ) {
+        LazyColumn(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 15.dp)
+                .padding(bottom = 100.dp)
+                .fillMaxWidth()
+        ) {
 
-        itemsIndexed(AppContext.nombresGuardados) {index, nombres ->
-            Card(
-                modifier = Modifier
-                    .padding(vertical = 8.dp) //ESPACIO entre tarjetitas
-                    .fillMaxWidth(),
-                backgroundColor = Color.LightGray //TODO MaterialTheme.colors.primary VER COMO FUNCIONA ESO PARA CAMBIARLO
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
+            itemsIndexed(historial) { index, instanciaHistorial ->
 
-                    if (botonApretado.value) {
-                        Checkbox(
-                            checked = selectedList[index],
-                            onCheckedChange = { isChecked ->
-                                selectedList[index] = isChecked
-                            })
-
+                Card(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp) //ESPACIO entre tarjetitas
+                        .fillMaxWidth()
+                        .let {
+                            if (!botonApretado.value) {
+                                it.clickable { tarjetaApretada.value = true
+                                    indice=index}
+                            } else {
+                                it
+                            }
+                        },
+                    backgroundColor = Color.LightGray //TODO MaterialTheme.colors.primary VER COMO FUNCIONA ESO PARA CAMBIARLO
+                )
+                {
+                    if (tarjetaApretada.value) {
+                        RepetirBusqueda(indice)
+                        tarjetaApretada.value = false
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(65.dp)
-                            .padding(end = 16.dp)
-                            .align(Alignment.CenterVertically)
-                            .padding(start = 16.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        var imagen =R.drawable.history
-                        var descripcion="hola"
-                        if(nombres.fourth=="1"){
-                            imagen= R.drawable.local_cafe
-                            var descripcion="Cafe"
-                        }else if(nombres.fourth=="2"){
-                            imagen= R.drawable.restaurant_menu
-                            var descripcion="Restaurante"
-                        }else if(nombres.fourth=="2"){
-                            imagen= R.drawable.storefront
-                            var descripcion="Tienda"
-                        }else{
-                            imagen= R.drawable.location
-                            var descripcion="Punto medio"
+
+                        if (botonApretado.value) {
+                            Checkbox(
+                                checked = selectedList[index],
+                                onCheckedChange = { isChecked ->
+                                    selectedList[index] = isChecked
+                                })
+
                         }
+
+                        Box(
+                            modifier = Modifier
+                                .size(65.dp)
+                                .padding(end = 16.dp)
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 16.dp)
+                        ) {
+                            var imagen = R.drawable.history
+                            var descripcion = "hola"
+                            if (instanciaHistorial.meetingAddress?.type == "CAFE") {
+                                imagen = R.drawable.local_cafe
+                                var descripcion = "Cafe"
+                            } else if (instanciaHistorial.meetingAddress?.type == "RESTAURANT") {
+                                imagen = R.drawable.restaurant_menu
+                                var descripcion = "Restaurante"
+                            } else if (instanciaHistorial.meetingAddress?.type == "SHOPPING_MALL") {
+                                imagen = R.drawable.storefront
+                                var descripcion = "Tienda"
+                            } else {
+                                imagen = R.drawable.location
+                                var descripcion = "Punto medio"
+                            }
+                            Image(
+                                painter =
+                                painterResource(imagen),
+                                contentDescription = descripcion,
+                                modifier = Modifier.fillMaxSize(),
+
+                                )
+                        }
+                        val newTitle = if(instanciaHistorial.meetingAddress?.type == "ADDRESS"){
+                            "Lat: " + instanciaHistorial.meetingAddress?.lat + ", Lon: " + instanciaHistorial.meetingAddress?.lon
+                        } else {
+                            instanciaHistorial.meetingAddress?.name.toString()
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
+                        ) {
+                            Text(
+
+                                text = newTitle,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = instanciaHistorial.addresses?.get(0)?.lat.toString(),
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = instanciaHistorial.addresses?.get(1)?.lat.toString(),
+                                fontSize = 20.sp
+                            )
+                            if (instanciaHistorial.addresses?.size!! > 2) {
+                                Text(
+                                    text = "...",
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+
                         Image(
-                            painter =
-                             painterResource(imagen),
-                            contentDescription = descripcion,
-                            modifier = Modifier.fillMaxSize(),
-
+                            painter = painterResource(R.drawable.history),
+                            contentDescription = "Historial",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .align(Alignment.CenterVertically)
+                                .padding(end = 8.dp)
                         )
+
+
                     }
-
-                    Column(
-                        modifier = Modifier.weight(1f)
-                            .padding(start = 8.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
-                    )  {
-                    Text(
-                        text = nombres.first,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = nombres.second,
-                        fontSize = 20.sp
-                    )
-                    Text(
-                        text = nombres.third,
-                        fontSize = 20.sp
-                    )
-                }
-
-                    Image(
-                        painter = painterResource(R.drawable.history),
-                        contentDescription = "Historial",
-                        modifier = Modifier.size(48.dp)
-                            .align(Alignment.CenterVertically)
-                            .padding(end = 8.dp)
-                    )
-
-
                 }
             }
         }
     }
-
-    }
 }
 
-data class Cuadruple<out A, out B, out C, out D>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D
-)
 
-
-
-private const val NOMBRES_GUARDADOS_KEY = "nombresGuardadoss"
-
-//ESTA CLASE PERMITE QUE SE GUARDE ENTRE SESIONES EL HISTORIAL (TIENE UNA FUNCION PARA BORRARLO ENTERO, PARA LAS PRUEBAS)
-//TODO AGREGAR FUNCION QUE PERMITA BORRAR DE A UNO
-class MySharedPreferences(context: Context) {
-    private val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
-    private val gson = Gson()
-
-    fun getNombresGuardados(): List<Cuadruple<String, String, String,String>> {
-        val nombresGuardadosJson = sharedPreferences.getString(NOMBRES_GUARDADOS_KEY, null)
-        return if (nombresGuardadosJson != null) {
-            val type = object : TypeToken<List<Cuadruple<String, String, String,String>>>() {}.type
-            gson.fromJson(nombresGuardadosJson, type)
-        } else {
-            emptyList()
-        }
-    }
-
-    fun guardarNombresGuardados() {
-        val nombresGuardadosJson = gson.toJson(AppContext.nombresGuardados)
-        val editor = sharedPreferences.edit()
-        editor.putString(NOMBRES_GUARDADOS_KEY, nombresGuardadosJson)
-        editor.apply()
-
-    }
-    fun borrarNombresGuardados() {
-        val editor = sharedPreferences.edit()
-        editor.remove(NOMBRES_GUARDADOS_KEY)
-        editor.apply()
-       listaVacia()
-    }
-
-    fun borrarSeleccionadosSesiones() {
-        val editor = sharedPreferences.edit()
-        editor.remove(NOMBRES_GUARDADOS_KEY)
-        editor.apply()
-        guardarNombresGuardados()
-    }
-
-    fun listaVacia() {
-        AppContext.nombresGuardados.clear()
-        AppContext.nombresGuardados.addAll(getNombresGuardados())
-    }
-
-    fun borrarSeleccionado(i: Int) {
-        AppContext.nombresGuardados.removeAt(i)
-    }
-
-}
-
-//ACA SE AGREGA ALGO NUEVO AL HISTORIAL
+//TODO HACER ESTA FUNCION MAS LEGIBLE
 @Composable
-//Defino la funcion que debe ser llamada para agregar tarjetitas en el historial
-fun agregarAHistorial(nombre1: String, nombre2: String, nombre3: String,nombre4: String) {
-
-    AppContext.nombresGuardados.clear()
-    AppContext.nombresGuardados.addAll(AppContext.sharedPreferences.getNombresGuardados())
-    AppContext.nombresGuardados.add(Cuadruple(nombre1, nombre2, nombre3,nombre4))
-    AppContext.sharedPreferences.guardarNombresGuardados()
-
-
-}
-
-fun mostrarGuardados() {
-
-    AppContext.nombresGuardados.clear()
-    AppContext.nombresGuardados.addAll(AppContext.sharedPreferences.getNombresGuardados())
-
+//todoo lo de abajo hace que se muestren por pantalla las tarjetitas
+fun HistorialScreen(navController: NavController) {
+    var count = historial.size
+    Tacho(count)
+    CrearListaSeleccion(count)
+    EliminarSeleccionados(count)
+    Tarjetas()
 
 }
 
-@SuppressLint("StaticFieldLeak")
-object AppContext {
-    lateinit var context: Context
-    lateinit var sharedPreferences: MySharedPreferences
-    var nombresGuardados = mutableStateListOf<Cuadruple<String, String, String, String>>()
+fun getHistorial() {
+    val retrofitBuilder =
+        Retrofit.Builder()
+            .baseUrl("http://192.168.1.44:8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    val retrofitData = retrofitBuilder.getHistorial();
+    retrofitData.enqueue(object: Callback<List<Historial>>{
+        override fun onResponse(call: Call<List<Historial>>, response: Response<List<Historial>>) {
+            historial.clear()
+            historial.addAll(response.body()!!)
+        }
 
-    fun init(context: Context) {
-        this.context = context.applicationContext
-        sharedPreferences = MySharedPreferences(context.applicationContext)
-        nombresGuardados.clear()
-        nombresGuardados.addAll(sharedPreferences.getNombresGuardados())
-    }
+        override fun onFailure(call: Call<List<Historial>>, t: Throwable) {
+            Log.d("TAG", t.toString());
+        }
+    })
+}
 
+fun deleteFromHistorial(id: String) {
+    val retrofitBuilder =
+        Retrofit.Builder()
+            .baseUrl("http:/ :8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    val retrofitData = retrofitBuilder.deleteFromHistorial(id);
+    retrofitData.enqueue(object: Callback<String>{
+        override fun onResponse(call: Call<String>, response: Response<String>) {
+
+        }
+
+        override fun onFailure(call: Call<String>, t: Throwable) {
+            Log.d("TAG", t.toString());
+        }
+    })
+}
+
+fun borrarSeleccionado(i: Int) {
+    deleteFromHistorial(historial[i].id.toString())
+    historial.removeAt(i)
 }

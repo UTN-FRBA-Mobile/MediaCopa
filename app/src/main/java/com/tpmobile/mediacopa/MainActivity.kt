@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,31 +15,40 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.tpmobile.mediacopa.model.AddressesItem
+import com.tpmobile.mediacopa.model.RequestMeetings
 import com.tpmobile.mediacopa.ui.screens.*
-import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
-import com.tpmobile.mediacopa.MapState
 
 
 class MainActivity : ComponentActivity() {
-    private lateinit var navController: NavController
-    var placesClient: PlacesClient? = null;
+    var placesClient: PlacesClient? = null
+
+    val address1 = AddressesItem(lon = -57.4086263, lat = -35.6404408)
+    val address2 = AddressesItem(lon = -56.4086263, lat = -34.6404408)
+    val address3 = AddressesItem(lon = -55.4086263, lat = -36.6404408)
+    val listOfAddresses = listOf(address1, address2, address3)
+
+    val requestMiddlePointBody = RequestMeetings(
+        type= "CAFE",
+        addresses = listOfAddresses
+    )
+
 
     // Para tener la ubicacion del dispositivo
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    // Mapa
     private val viewModel: MapViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +57,7 @@ class MainActivity : ComponentActivity() {
         // Pedimos permiso para ver su ubicacion
         if (::fusedLocationProviderClient.isInitialized) {
             askPermissions()}
+        getHistorial()
         setContent {
             MediaCopaTPTheme {
                 // A surface container using the 'background' color from the theme
@@ -54,33 +65,29 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                   // AppContext.context = LocalContext.current
-                    AppContext.context = applicationContext
-                    sharedPreferences = MySharedPreferences(AppContext.context)
-                    val navController = rememberNavController()
+                    Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
+                    placesClient =
+                        Places.createClient(applicationContext) // provide your application context here
 
-                    Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY);
-                    placesClient = Places.createClient(applicationContext); // provide your application context here
-
-                    BottomMenu(placesClient ?: null , viewModel, fusedLocationProviderClient)
+                    BottomMenu(viewModel)
                 }
             }
         }
     }
 
     // region Permiso de ubicacion
-    fun askPermissions()= when {
+    private fun askPermissions()= when (PackageManager.PERMISSION_GRANTED) {
         ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED -> {
+        ) -> {
             viewModel.getDeviceLocation(fusedLocationProviderClient)
         }
         else -> {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
-    // si bien el codigo todavia no hace nada con la ubicacion, queda para cuando querramos usarlo
+
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -90,17 +97,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     // endregion
-
-
 }
+
+
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 //@Preview(showBackground = true)
 @Composable
-fun BottomMenu(placesClient: PlacesClient?, viewModel : MapViewModel, fusedLocationProviderClient: FusedLocationProviderClient) {
+fun BottomMenu(viewModel : MapViewModel) {
     val navController = rememberNavController()
-    Scaffold(
 
+    Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("Lugares") }) {
                 Image(
@@ -132,15 +139,15 @@ fun BottomMenu(placesClient: PlacesClient?, viewModel : MapViewModel, fusedLocat
 
         NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones/{lugar}") {
-                val lugar= it.arguments?.getString("lugar");
+                val lugar= it.arguments?.getString("lugar")
+
                 if (lugar != null) {
-                    DireccionesScreen(navController , lugar , placesClient, viewModel, fusedLocationProviderClient )
+                    DireccionesViewModel().DireccionesScreen(navController , lugar, viewModel)
                 }
             }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
-            //composable("Mapa") { MapaScreen(navController) }
-            composable("Mapa") { MapViewModel().MapScreen(navController) }
+            composable("Mapa") {MapViewModel().MapScreen(navController)}
         }
     }
 }

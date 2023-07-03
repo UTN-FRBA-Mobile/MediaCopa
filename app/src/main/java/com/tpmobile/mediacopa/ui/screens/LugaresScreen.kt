@@ -23,10 +23,10 @@ import com.google.android.libraries.places.api.model.Place
 fun LugaresScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
 
         val options = mapOf(
-                Place.Type.CAFE to "Cafes"        ,
-                Place.Type.RESTAURANT to "Restaurantes" ,
-                Place.Type.STORE to "Tiendas"      ,
-                Place.Type.POINT_OF_INTEREST to "Punto medio")
+                "CAFE" to "Cafes"        ,
+                "RESTAURANT" to "Restaurantes" ,
+                "SHOPPING_MALL" to "Tiendas"      ,
+                "ADDRESS" to "Punto medio")
 
     val (selectedOption, onOptionSelected) = remember { mutableStateOf(options.keys.first()) }
 
