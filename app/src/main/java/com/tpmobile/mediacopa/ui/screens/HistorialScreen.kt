@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
+import com.tpmobile.mediacopa.MapState
 import com.tpmobile.mediacopa.R
 import com.tpmobile.mediacopa.model.Historial
 import com.tpmobile.mediacopa.networking.ApiService
@@ -167,10 +168,15 @@ fun BotonPruebas(){
 
 }
 
-//TODO
+//TODO()
 @Composable
 fun RepetirBusqueda(index: Int) {
     Log.d("RepetirBusqueda", "Valor de index: $index")
+
+    // TODO: cuando quieran repetir la busqueda, pongan en este objeto MapState
+    //  la address midpoint y las otras, porque toda la app lo ve y de ahi lo saca el MapViewModel
+    //MapState.midpointAddress = null
+    //MapState.otherAddresses = null
 }
 
 @Composable
