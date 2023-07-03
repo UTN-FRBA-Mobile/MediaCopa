@@ -33,17 +33,6 @@ import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 class MainActivity : ComponentActivity() {
     var placesClient: PlacesClient? = null
 
-    val address1 = AddressesItem(lon = -57.4086263, lat = -35.6404408)
-    val address2 = AddressesItem(lon = -56.4086263, lat = -34.6404408)
-    val address3 = AddressesItem(lon = -55.4086263, lat = -36.6404408)
-    val listOfAddresses = listOf(address1, address2, address3)
-
-    val requestMiddlePointBody = RequestMeetings(
-        type= "CAFE",
-        addresses = listOfAddresses
-    )
-
-
     // Para tener la ubicacion del dispositivo
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 

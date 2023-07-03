@@ -253,16 +253,11 @@ class DireccionesViewModel(): ViewModel() {
             addresses = listOfAddresses
         );
 
-        //todo borrar eso harcode y usar la funcion de abajo
-        type = "CAFE"
-        lat = "-34.741876".toDouble()
-        lon = "-58.409036".toDouble()
-        streetAddress = "Alamafuerte 1439"
 
         // Seteo todas las direcciones en el estado para ser mostradas en el mapa
         MapState.otherAddresses = selectedPlaces.toList()
-
-        //getMiddlePoint(requestMiddlePointBody) //todo descomentar
+        Log.d("LOG", "hola")
+        getMiddlePoint(requestMiddlePointBody)
 
         navController.navigate("Mapa")
     }
@@ -271,7 +266,7 @@ class DireccionesViewModel(): ViewModel() {
     fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
         val retrofitBuilder =
             Retrofit.Builder()
-                .baseUrl("http://192.168.1.44:8081/")
+                .baseUrl("http://192.168.0.110:8081/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(ApiService::class.java)
@@ -279,12 +274,8 @@ class DireccionesViewModel(): ViewModel() {
         retrofitData.enqueue(object : Callback<Meeting> {
             override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
                 val responseBody = response.body()!!
-                type = responseBody.type.toString()
-                lat = responseBody.lat.toString().toDouble()
-                lon = responseBody.lon.toString().toDouble()
-                streetAddress = responseBody.streetAddress.toString()
 
-                MapState.midpointAddress = AddressesItem(streetAddress, lon, lat)
+                MapState.midpointAddress = responseBody
             }
 
             override fun onFailure(call: Call<Meeting>, t: Throwable) {

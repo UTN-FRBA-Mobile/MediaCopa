@@ -38,13 +38,14 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.tpmobile.mediacopa.MapState
+import com.tpmobile.mediacopa.model.AddressesItem
 
 
 //import com.tpmobile.mediacopa.ui.screens.AppContext.context
 
 
 class MapViewModel(): ViewModel() {
-    private var DEFAULT_ZOOM = 15F
+    private var DEFAULT_ZOOM = 13F
     private var defaultLocation = LatLng(-34.5986174, -58.4201076)
     private var map: GoogleMap? = null
 
@@ -141,24 +142,16 @@ class MapViewModel(): ViewModel() {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     MapState.lastKnownLocation = task.result
-                    if (MapState.lastKnownLocation != null) {
-                        map?.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                            LatLng(
-                                MapState.lastKnownLocation!!.latitude,
-                                MapState.lastKnownLocation!!.longitude), DEFAULT_ZOOM.toFloat()))
-                    }
-                    else {
+                    if (MapState.lastKnownLocation == null) {
+
                         Log.d(TAG, "Current location is null. Using defaults.")
                         Log.e(TAG, "Exception: %s", task.exception)
-                        map?.moveCamera(CameraUpdateFactory
-                            .newLatLngZoom(defaultLocation, DEFAULT_ZOOM.toFloat()))
-                        map?.uiSettings?.isMyLocationButtonEnabled = false
                     }
+
                 }
             }
         } catch (e: SecurityException) {
-            // Show error or something
+            Log.e("error", e.toString())
         }
     }
 }
