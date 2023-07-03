@@ -1,10 +1,10 @@
 package com.tpmobile.mediacopa
 
 import android.location.Location
-import com.google.android.gms.maps.model.LatLng
-import com.tpmobile.mediacopa.models.PuntoMedio
+import com.tpmobile.mediacopa.model.AddressesItem
 
 object MapState { // Singleton
     var lastKnownLocation: Location? = null
-    var midpointAddress: PuntoMedio? = null
+    var midpointAddress: AddressesItem? = null
+    var otherAddresses: List<AddressesItem>? = null
 }
