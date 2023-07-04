@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -141,13 +142,21 @@ class MapViewModel(): ViewModel() {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    MapState.lastKnownLocation = task.result
-                    if (MapState.lastKnownLocation == null) {
-
+                    var address = AddressesItem(
+                        streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
+                        lat = task.result?.latitude,
+                        lon = task.result?.longitude
+                    );
+                    if (address.lat == null) {
+                        address = AddressesItem(
+                            streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
+                            lat = -34.5986444,
+                            lon = -58.4415858
+                        );
                         Log.d(TAG, "Current location is null. Using defaults.")
                         Log.e(TAG, "Exception: %s", task.exception)
                     }
-
+                    MapState.lastKnownLocation = address
                 }
             }
         } catch (e: SecurityException) {

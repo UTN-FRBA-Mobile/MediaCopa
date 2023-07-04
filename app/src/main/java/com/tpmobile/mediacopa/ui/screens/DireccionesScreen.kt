@@ -98,12 +98,12 @@ class DireccionesViewModel(): ViewModel() {
                 // Deshabilitado si ya se clickeo, asi no se esta borrando y agregando a la pag
                 Button(
                     onClick = {
-                        var address = AddressesItem(
-                            streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
-                            lat = MapState.lastKnownLocation!!.latitude,
-                            lon = MapState.lastKnownLocation!!.longitude
-                        );
-                        selectedPlaces.add(address)
+                        var myAddress = MapState.lastKnownLocation
+                        if (myAddress != null) {
+                            selectedPlaces.add(myAddress)
+                        } else {
+                            Log.e("error", "error")
+                        }
                         miUbi = true;
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
