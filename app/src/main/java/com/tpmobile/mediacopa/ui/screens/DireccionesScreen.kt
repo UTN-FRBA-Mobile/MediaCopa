@@ -98,12 +98,12 @@ class DireccionesViewModel(): ViewModel() {
                 // Deshabilitado si ya se clickeo, asi no se esta borrando y agregando a la pag
                 Button(
                     onClick = {
-                        var address = AddressesItem(
-                            streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
-                            lat = MapState.lastKnownLocation!!.latitude,
-                            lon = MapState.lastKnownLocation!!.longitude
-                        );
-                        selectedPlaces.add(address)
+                        var myAddress = MapState.lastKnownLocation
+                        if (myAddress != null) {
+                            selectedPlaces.add(myAddress)
+                        } else {
+                            Log.e("error", "error")
+                        }
                         miUbi = true;
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
@@ -253,16 +253,10 @@ class DireccionesViewModel(): ViewModel() {
             addresses = listOfAddresses
         );
 
-        //todo borrar eso harcode y usar la funcion de abajo
-        type = "CAFE"
-        lat = "-34.741876".toDouble()
-        lon = "-58.409036".toDouble()
-        streetAddress = "Alamafuerte 1439"
 
         // Seteo todas las direcciones en el estado para ser mostradas en el mapa
         MapState.otherAddresses = selectedPlaces.toList()
-
-        //getMiddlePoint(requestMiddlePointBody) //todo descomentar
+        getMiddlePoint(requestMiddlePointBody)
 
         navController.navigate("Mapa")
     }
@@ -271,7 +265,7 @@ class DireccionesViewModel(): ViewModel() {
     fun getMiddlePoint(requestMiddlePointBody: RequestMeetings) {
         val retrofitBuilder =
             Retrofit.Builder()
-                .baseUrl("http://192.168.1.44:8081/")
+                .baseUrl("http://192.168.0.110:8081/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(ApiService::class.java)
@@ -279,12 +273,8 @@ class DireccionesViewModel(): ViewModel() {
         retrofitData.enqueue(object : Callback<Meeting> {
             override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
                 val responseBody = response.body()!!
-                type = responseBody.type.toString()
-                lat = responseBody.lat.toString().toDouble()
-                lon = responseBody.lon.toString().toDouble()
-                streetAddress = responseBody.streetAddress.toString()
-
-                MapState.midpointAddress = AddressesItem(streetAddress, lon, lat)
+                MapState.midpointAddress = responseBody
+                getHistorial()
             }
 
             override fun onFailure(call: Call<Meeting>, t: Throwable) {
