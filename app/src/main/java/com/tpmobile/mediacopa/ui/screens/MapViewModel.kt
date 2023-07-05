@@ -46,7 +46,7 @@ import com.tpmobile.mediacopa.model.AddressesItem
 
 
 class MapViewModel(): ViewModel() {
-    private var DEFAULT_ZOOM = 13F
+    private var DEFAULT_ZOOM = 16F
     private var defaultLocation = LatLng(-34.5986174, -58.4201076)
     private var map: GoogleMap? = null
 
@@ -86,7 +86,7 @@ class MapViewModel(): ViewModel() {
         }
 
         GoogleMap(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.padding(bottom = 50.dp).fillMaxSize(),
             cameraPositionState = cameraPositionState,
             //uiSettings = uiSettings
         ) {
@@ -134,10 +134,6 @@ class MapViewModel(): ViewModel() {
 
     @SuppressLint("MissingPermission")
     fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient){
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
         try {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
