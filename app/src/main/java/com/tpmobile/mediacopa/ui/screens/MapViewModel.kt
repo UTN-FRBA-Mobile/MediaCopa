@@ -134,6 +134,8 @@ class MapViewModel(): ViewModel() {
 
     @SuppressLint("MissingPermission")
     fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient){
+        Log.e("hola", "hola")
+
         try {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
@@ -152,7 +154,16 @@ class MapViewModel(): ViewModel() {
                         Log.d(TAG, "Current location is null. Using defaults.")
                         Log.e(TAG, "Exception: %s", task.exception)
                     }
+                    else{
+                        Log.e("CORRECTO!", "SE USA LA GEOLOCALOZACION") //NO BORRAR ESTOS LOSGS
+                        Log.e("lat", address.lat.toString())
+                        Log.e("lat", address.lat.toString())
+                    }
                     MapState.lastKnownLocation = address
+
+
+
+
                 }
             }
         } catch (e: SecurityException) {
