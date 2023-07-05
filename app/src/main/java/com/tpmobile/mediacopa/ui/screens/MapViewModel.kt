@@ -9,19 +9,11 @@ import android.location.Location
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -29,13 +21,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.tpmobile.mediacopa.MapState
@@ -57,9 +47,12 @@ class MapViewModel(): ViewModel() {
             action = Intent.ACTION_SEND
             type = "text/plain"
         }
+        var locationStringW = translateToDegrees(latitude = midpointAddress?.lat as Double, longitude = midpointAddress?.lon as Double)
 
         sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Media Copa")
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos en ${midpointAddress?.streetAddress.toString()}")
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos aqui: https://www.google.com/maps/place/${locationStringW}/")
+
+
 
         val shareIntent = Intent.createChooser(sendIntent, "Share")
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -73,36 +66,26 @@ class MapViewModel(): ViewModel() {
 
     @Composable
     fun MapScreen(navController: NavController) {
-        //var uiSettings by remember { mutableStateOf(MapUiSettings()) }
-
         var context = LocalContext.current;
 
-        var location = if (MapState.midpointAddress != null)
-            LatLng(MapState.midpointAddress!!.lat as Double, MapState.midpointAddress!!.lon as Double)
-            else defaultLocation
+        var location = defaultLocation
+        if (MapState.midpointAddress != null) {
+            location = LatLng(
+                MapState.midpointAddress!!.lat as Double,
+                MapState.midpointAddress!!.lon as Double
+            )
+        }
 
         var cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(location, DEFAULT_ZOOM)
         }
 
         GoogleMap(
-            modifier = Modifier.padding(bottom = 50.dp).fillMaxSize(),
+            modifier = Modifier
+                .padding(bottom = 50.dp)
+                .fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            //uiSettings = uiSettings
         ) {
-//            Switch(
-//                checked = uiSettings.zoomControlsEnabled,
-//                onCheckedChange = {
-//                    uiSettings = uiSettings.copy(zoomControlsEnabled = it)
-//                }
-//            )
-//            Button(
-//                onClick = {
-//                    cameraPositionState.move(CameraUpdateFactory.newLatLng(location))
-//                }
-//            ) {
-//                Icon(Icons.Filled.LocationOn, contentDescription = "Volver al punto medio" )
-//            }
             Marker( // el punto marcado de un color, el resto de las addresses de otro
                 position = location,
                 title = "Punto Medio",
@@ -114,7 +97,7 @@ class MapViewModel(): ViewModel() {
                     Marker(
                         position = LatLng(it?.lat as Double, it?.lon as Double),
                         title = it?.streetAddress as String?,
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                        icon = BitmapDescriptorFactory.defaultMarker(246.0F)
                     )
                 }
             }
@@ -131,26 +114,61 @@ class MapViewModel(): ViewModel() {
         }
     }
 
+    private fun translateToDegrees(latitude: Double, longitude: Double): String? {
+        val builder = StringBuilder()
+
+        val latitudeDegrees = Location.convert(Math.abs(latitude), Location.FORMAT_SECONDS)
+        val latitudeSplit = latitudeDegrees.split(":".toRegex()).dropLastWhile { it.isEmpty() }
+            .toTypedArray()
+        builder.append(latitudeSplit[0])
+        builder.append("°")
+        builder.append(latitudeSplit[1])
+        builder.append("'")
+        builder.append(latitudeSplit[2])
+        builder.append("\"")
+        if (latitude < 0) {
+            builder.append("S")
+        } else {
+            builder.append("N")
+        }
+        builder.append("+")
+        val longitudeDegrees = Location.convert(Math.abs(longitude), Location.FORMAT_SECONDS)
+        val longitudeSplit = longitudeDegrees.split(":".toRegex()).dropLastWhile { it.isEmpty() }
+            .toTypedArray()
+        builder.append(longitudeSplit[0])
+        builder.append("°")
+        builder.append(longitudeSplit[1])
+        builder.append("'")
+        builder.append(longitudeSplit[2])
+        builder.append("\"")
+        if (longitude < 0) {
+            builder.append("W")
+        } else {
+            builder.append("E")
+        }
+        return builder.toString()
+    }
+
 
     @SuppressLint("MissingPermission")
     fun getDeviceLocation(fusedLocationProviderClient: FusedLocationProviderClient){
         try {
             val locationResult = fusedLocationProviderClient.lastLocation
-            locationResult.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+            locationResult.addOnSuccessListener { task ->
+                if (task != null) {
                     var address = AddressesItem(
                         streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
-                        lat = task.result?.latitude,
-                        lon = task.result?.longitude
+                        lat = task?.latitude,
+                        lon = task?.longitude
                     );
                     if (address.lat == null) {
+                        Log.d("TAG", "Fallo la obtencion de la ubicacion, usamos una por defecto")
                         address = AddressesItem(
                             streetAddress = "Mi ubicacion", //por favor no cambiar porque hay codigo que depende de este nombre
                             lat = -34.5986444,
                             lon = -58.4415858
                         );
                         Log.d(TAG, "Current location is null. Using defaults.")
-                        Log.e(TAG, "Exception: %s", task.exception)
                     }
                     MapState.lastKnownLocation = address
                 }

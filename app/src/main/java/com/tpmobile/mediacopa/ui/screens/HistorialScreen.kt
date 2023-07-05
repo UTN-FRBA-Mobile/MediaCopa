@@ -279,11 +279,11 @@ fun Tarjetas(navController: NavController){
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = instanciaHistorial.addresses?.get(0)?.lat.toString(),
+                                text = instanciaHistorial.addresses?.get(0)?.streetAddress.toString(),
                                 fontSize = 20.sp
                             )
                             Text(
-                                text = instanciaHistorial.addresses?.get(1)?.lat.toString(),
+                                text = instanciaHistorial.addresses?.get(1)?.streetAddress.toString(),
                                 fontSize = 20.sp
                             )
                             if (instanciaHistorial.addresses?.size!! > 2) {
