@@ -59,7 +59,7 @@ class MapViewModel(): ViewModel() {
         }
 
         sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Media Copa")
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos en ${midpointAddress?.streetAddress.toString()}")
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Podemos encontrarnos en ${midpointAddress?.name.toString()} ubicado en  ${midpointAddress?.streetAddress.toString()}")
 
         val shareIntent = Intent.createChooser(sendIntent, "Share")
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
