@@ -256,7 +256,6 @@ class DireccionesViewModel(): ViewModel() {
 
         // Seteo todas las direcciones en el estado para ser mostradas en el mapa
         MapState.otherAddresses = selectedPlaces.toList()
-        Log.d("LOG", "hola")
         getMiddlePoint(requestMiddlePointBody)
 
         navController.navigate("Mapa")
