@@ -38,7 +38,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import com.tpmobile.mediacopa.MapState
 import com.tpmobile.mediacopa.R
+import com.tpmobile.mediacopa.model.AddressesItem
 import com.tpmobile.mediacopa.model.Historial
+import com.tpmobile.mediacopa.model.Meeting
 import com.tpmobile.mediacopa.networking.ApiService
 import retrofit2.Call
 import retrofit2.Callback
@@ -170,17 +172,18 @@ fun BotonPruebas(){
 
 //TODO()
 @Composable
-fun RepetirBusqueda(index: Int) {
-    Log.d("RepetirBusqueda", "Valor de index: $index")
-
-    // TODO: cuando quieran repetir la busqueda, pongan en este objeto MapState
-    //  la address midpoint y las otras, porque toda la app lo ve y de ahi lo saca el MapViewModel
-    //MapState.midpointAddress = null
-    //MapState.otherAddresses = null
+fun RepetirBusqueda(index: Int, navController: NavController) {
+    // ADD PUNTO MEDIO TO MapState
+    val historialItem = historial[index].meetingAddress
+    val newMeeting = Meeting(type = historialItem?.type, lat = historialItem?.lat, lon = historialItem?.lon)
+    MapState.midpointAddress = newMeeting
+    // ADD ADDRESSES TO MapState
+    MapState.otherAddresses = historial[index].addresses as List<AddressesItem>?
+    navController.navigate("Mapa")
 }
 
 @Composable
-fun Tarjetas(){
+fun Tarjetas(navController: NavController){
     var indice=0
     Box(modifier = Modifier
         .fillMaxSize()
@@ -210,7 +213,7 @@ fun Tarjetas(){
                 )
                 {
                     if (tarjetaApretada.value) {
-                        RepetirBusqueda(indice)
+                        RepetirBusqueda(indice, navController)
                         tarjetaApretada.value = false
                     }
 
@@ -299,8 +302,6 @@ fun Tarjetas(){
                                 .align(Alignment.CenterVertically)
                                 .padding(end = 8.dp)
                         )
-
-
                     }
                 }
             }
@@ -317,8 +318,7 @@ fun HistorialScreen(navController: NavController) {
     Tacho(count)
     CrearListaSeleccion(count)
     EliminarSeleccionados(count)
-    Tarjetas()
-
+    Tarjetas(navController)
 }
 
 fun getHistorial() {
@@ -344,7 +344,7 @@ fun getHistorial() {
 fun deleteFromHistorial(id: String) {
     val retrofitBuilder =
         Retrofit.Builder()
-            .baseUrl("http:/ :8081/")
+            .baseUrl("http://192.168.0.110:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)

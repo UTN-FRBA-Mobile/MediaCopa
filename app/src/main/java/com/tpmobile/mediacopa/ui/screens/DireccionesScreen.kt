@@ -274,8 +274,8 @@ class DireccionesViewModel(): ViewModel() {
         retrofitData.enqueue(object : Callback<Meeting> {
             override fun onResponse(call: Call<Meeting>, response: Response<Meeting>) {
                 val responseBody = response.body()!!
-
                 MapState.midpointAddress = responseBody
+                getHistorial()
             }
 
             override fun onFailure(call: Call<Meeting>, t: Throwable) {
