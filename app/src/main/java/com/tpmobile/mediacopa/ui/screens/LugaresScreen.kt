@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
+import com.google.android.libraries.places.api.model.Place
 
 
 //@Preview(showBackground = true)
@@ -22,10 +23,10 @@ import androidx.compose.ui.Modifier
 fun LugaresScreen(navController: NavController) { // hay que comentar los parametros para poder usar el preview
 
         val options = mapOf(
-        0 to "Cafes"        ,
-        1 to "Restaurantes" ,
-        2 to "Tiendas"      ,
-        3 to "Punto medio")
+                "CAFE" to "Cafes"        ,
+                "RESTAURANT" to "Restaurantes" ,
+                "SHOPPING_MALL" to "Tiendas"      ,
+                "ADDRESS" to "Punto medio")
 
     val (selectedOption, onOptionSelected) = remember { mutableStateOf(options.keys.first()) }
 

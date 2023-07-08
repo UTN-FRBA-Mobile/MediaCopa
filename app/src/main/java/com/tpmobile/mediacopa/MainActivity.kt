@@ -1,37 +1,51 @@
 package com.tpmobile.mediacopa
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.*
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.tpmobile.mediacopa.model.AddressesItem
+import com.tpmobile.mediacopa.model.RequestMeetings
 import com.tpmobile.mediacopa.ui.screens.*
-import com.tpmobile.mediacopa.ui.screens.AppContext.sharedPreferences
 import com.tpmobile.mediacopa.ui.theme.MediaCopaTPTheme
 
 
-
 class MainActivity : ComponentActivity() {
-    private lateinit var navController: NavController
+    var placesClient: PlacesClient? = null
+
+    // Para tener la ubicacion del dispositivo
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    // Mapa
+    private val viewModel: MapViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        // Pedimos permiso para ver su ubicacion
+        if (::fusedLocationProviderClient.isInitialized) {
+            askPermissions()}
+        getHistorial()
         setContent {
             MediaCopaTPTheme {
                 // A surface container using the 'background' color from the theme
@@ -39,24 +53,49 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                   // AppContext.context = LocalContext.current
-                    AppContext.context = applicationContext
-                    sharedPreferences = MySharedPreferences(AppContext.context)
-                    val navController = rememberNavController()
-                    BottomMenu()
+                    Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
+                    placesClient =
+                        Places.createClient(applicationContext) // provide your application context here
+
+                    BottomMenu(viewModel)
                 }
             }
         }
     }
+
+    // region Permiso de ubicacion
+    private fun askPermissions()= when (PackageManager.PERMISSION_GRANTED) {
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) -> {
+            viewModel.getDeviceLocation(fusedLocationProviderClient)
+        }
+        else -> {
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                viewModel.getDeviceLocation(fusedLocationProviderClient)
+            }
+        }
+    // endregion
 }
+
+
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 //@Preview(showBackground = true)
 @Composable
-fun BottomMenu() {
+fun BottomMenu(viewModel : MapViewModel) {
     val navController = rememberNavController()
-    Scaffold(
 
+    Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("Lugares") }) {
                 Image(
@@ -77,7 +116,7 @@ fun BottomMenu() {
                     IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { navController.navigate("Direcciones") }) {
+                    IconButton(onClick = { navController.navigate("Direcciones/Place.Type.POINT_OF_INTEREST") }) {
                         Icon(Icons.Filled.Place, contentDescription = "Direcciones")
                     }
                 }
@@ -88,15 +127,15 @@ fun BottomMenu() {
 
         NavHost(navController, startDestination = "Lugares") {
             composable("Direcciones/{lugar}") {
-                val lugar= it.arguments?.getString("lugar");
+                val lugar= it.arguments?.getString("lugar")
+
                 if (lugar != null) {
-                    DireccionesScreen(navController , lugar)
+                    DireccionesViewModel().DireccionesScreen(navController , lugar, viewModel)
                 }
             }
             composable("Historial") { HistorialScreen(navController) }
             composable("Lugares") { LugaresScreen(navController) }
-            composable("Mapa") { MapaScreen(navController) }
+            composable("Mapa") { MapViewModel().MapScreen(navController)}
         }
     }
-
 }
