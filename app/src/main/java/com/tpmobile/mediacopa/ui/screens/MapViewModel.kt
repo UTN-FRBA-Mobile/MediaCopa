@@ -25,6 +25,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -76,15 +77,11 @@ class MapViewModel(): ViewModel() {
             )
         }
 
-        var cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(location, DEFAULT_ZOOM)
-        }
-
         GoogleMap(
             modifier = Modifier
                 .padding(bottom = 50.dp)
                 .fillMaxSize(),
-            cameraPositionState = cameraPositionState,
+            cameraPositionState = CameraPositionState(CameraPosition.fromLatLngZoom(location, DEFAULT_ZOOM)),
         ) {
             Marker( // el punto marcado de un color, el resto de las addresses de otro
                 position = location,

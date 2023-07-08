@@ -51,10 +51,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 var selectedPlaces =  mutableStateListOf<AddressesItem>()
-var type: String = ""
-var lat: Double = 0.0;
-var lon: Double = 0.0;
-var streetAddress: String = ""
 var miUbi : Boolean = false;
 
 

@@ -116,7 +116,7 @@ fun BottomMenu(viewModel : MapViewModel) {
                     IconButton(onClick = {  navController.navigate("Historial") }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Historial")
                     }
-                    IconButton(onClick = { navController.navigate("Direcciones/Place.Type.POINT_OF_INTEREST") }) {
+                    IconButton(onClick = { navController.navigate("Direcciones/ADDRESS") }) {
                         Icon(Icons.Filled.Place, contentDescription = "Direcciones")
                     }
                 }
