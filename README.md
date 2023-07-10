@@ -26,7 +26,7 @@ Diseñada para buscar un cafe, restaurante, tienda donde puedas juntarte con tus
 
 ## Reconocimientos
 
-Aplicación para dispositivos moviles "MediaCopa" realizada como trabajo practico de la materia Desarrollo de Aplicaciones Moviles en la carrera de Ingeniera en Sistemas de la Universidad Tecnologica Nacional regional Buenos Aires
+Aplicación para dispositivos moviles "MediaCopa" realizada como trabajo practico de la materia Desarrollo de Aplicaciones para Dispositivos Moviles en 5° año de la carrera de Ingeniera en Sistemas de la Universidad Tecnologica Nacional regional Buenos Aires
 
 Alumnos:
 Dominguez Fransisco
