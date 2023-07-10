@@ -7,16 +7,21 @@ Diseñada para buscar un cafe, restaurante, tienda donde puedas juntarte con tus
 ¡Comienza hoy a utilizar MediaCopa, nunca había sido tan sencillo juntarse con amigos!
 
 ## Pantalla de incio
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/783ce51e-5eec-4627-8e5a-6af6ec14c705)
+<img width="388" alt="Screenshot 2023-07-10 at 15 43 59" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/b6c4f79a-fd1b-4211-80c6-2c37d0921553">
+
 
 ## Insertar direcciones
 
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/e4a5eea6-d11b-4269-99f8-67ae3c4d5869)
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/a268145e-0803-4363-bf51-59227521765a)
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/9744cd79-f838-43f2-866a-ba38fbee740d)
+<img width="388" alt="Screenshot 2023-07-10 at 15 44 08" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/03495cba-4270-40b8-a569-f42ab7514dd2">
+<img width="388" alt="Screenshot 2023-07-10 at 15 46 15" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/c3335053-08a2-47c1-8c14-46a2cf03511d">
+<img width="388" alt="Screenshot 2023-07-10 at 15 44 24" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/816193d1-4547-4967-b3c5-fbc7bdc518f3">
+![Uploading Screenshot 2023-07-10 at 15.46.28.png…]()
+
 
 ## Ver punto medio
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/e128d22e-0028-4cb4-bf8d-fdfd23a11dbe)
+
+<img width="388" alt="Screenshot 2023-07-10 at 15 44 38" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/68c182aa-c81d-4219-9d97-3c381442978d">
+![Uploading Screenshot 2023-07-10 at 15.46.38.png…]()
 
 ## Compartir el punto medio
 ![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/95b8fac3-21c9-4d4e-b519-d3d896d14a6f)
