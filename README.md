@@ -15,19 +15,25 @@ Diseñada para buscar un cafe, restaurante, tienda donde puedas juntarte con tus
 <img width="388" alt="Screenshot 2023-07-10 at 15 44 08" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/03495cba-4270-40b8-a569-f42ab7514dd2">
 <img width="388" alt="Screenshot 2023-07-10 at 15 46 15" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/c3335053-08a2-47c1-8c14-46a2cf03511d">
 <img width="388" alt="Screenshot 2023-07-10 at 15 44 24" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/816193d1-4547-4967-b3c5-fbc7bdc518f3">
-![Uploading Screenshot 2023-07-10 at 15.46.28.png…]()
+<img width="388" alt="Screenshot 2023-07-10 at 15 46 28" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/2817d244-78cf-4211-9b68-e90c6bd9365f">
 
 
 ## Ver punto medio
 
 <img width="388" alt="Screenshot 2023-07-10 at 15 44 38" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/68c182aa-c81d-4219-9d97-3c381442978d">
-![Uploading Screenshot 2023-07-10 at 15.46.38.png…]()
+<img width="388" alt="Screenshot 2023-07-10 at 15 46 38" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/3704246e-21f3-4a7e-b9cd-9f19e7e72189">
+
 
 ## Compartir el punto medio
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/95b8fac3-21c9-4d4e-b519-d3d896d14a6f)
+
+<img width="388" alt="Screenshot 2023-07-10 at 15 44 56" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/962ed4d3-4b20-4668-b172-d5dcef131533">
+
 
 ## Ver el historial
-![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/9463895e-8f25-49fd-bb9b-a9bf59fb5444)
+
+<img width="388" alt="Screenshot 2023-07-10 at 15 46 54" src="https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62482024/59818bfb-3d74-4b19-8156-a899eda948db">
+
+
 
 ## Reconocimientos
 
