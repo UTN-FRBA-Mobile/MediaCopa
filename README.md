@@ -24,6 +24,15 @@ Diseñada para buscar un cafe, restaurante, tienda donde puedas juntarte con tus
 ## Ver el historial
 ![image](https://github.com/UTN-FRBA-Mobile/MediaCopa/assets/62357337/9463895e-8f25-49fd-bb9b-a9bf59fb5444)
 
+## Reconocimientos
+
+Aplicación para dispositivos moviles "MediaCopa" realizada como trabajo practico de la materia Desarrollo de Aplicaciones Moviles en la carrera de Ingeniera en Sistemas de la Universidad Tecnologica Nacional regional Buenos Aires
+
+Alumnos:
+Dominguez Fransisco
+Horowitz Ezequiel
+Melamed Lucila
+Lamanna Antico Valentina
 
 
 
